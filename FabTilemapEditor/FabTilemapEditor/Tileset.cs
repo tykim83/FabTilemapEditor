@@ -64,11 +64,11 @@ public class Tileset
             (var isInside, var worldMousePos) = IsMouseInsideTileset();
             if (isInside)
             {
-                var tileX = (int)worldMousePos.X / 32;
-                var tileY = (int)worldMousePos.Y / 32;
+                var tileX = (int)worldMousePos.X / Constants.TILE_SIZE;
+                var tileY = (int)worldMousePos.Y / Constants.TILE_SIZE;
 
                 selectedTile = new Vector2(tileX, tileY);
-                selectedTilePixelPos = new Vector2(tileX * 32, tileY * 32);
+                selectedTilePixelPos = new Vector2(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE);
             }
         }
     }
@@ -87,15 +87,15 @@ public class Tileset
         (var isInside, var worldMousePos) = IsMouseInsideTileset();
         if (isInside)
         {
-            var tileX = (int)worldMousePos.X / 32;
-            var tileY = (int)worldMousePos.Y / 32;
+            var tileX = (int)worldMousePos.X / Constants.TILE_SIZE;
+            var tileY = (int)worldMousePos.Y / Constants.TILE_SIZE;
 
-            Raylib.DrawRectangleLines(tileX * 32, tileY * 32, 32, 32, Color.Red);
+            Raylib.DrawRectangleLines(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.TILE_SIZE, Constants.TILE_SIZE, Color.Red);
         }
 
         // Draw Selected tile
         if (selectedTilePixelPos is not null)
-            Raylib.DrawRectangleLines((int)selectedTilePixelPos.Value.X, (int)(selectedTilePixelPos.Value.Y), 32, 32, Color.Green);
+            Raylib.DrawRectangleLines((int)selectedTilePixelPos.Value.X, (int)(selectedTilePixelPos.Value.Y), Constants.TILE_SIZE, Constants.TILE_SIZE, Color.Green);
 
         Raylib.EndMode2D();
 
