@@ -67,12 +67,24 @@ public class Tilemap(Tileset tileset)
             if (tileID != -1)
             {
                 int tileX = i % TILEMAP_WIDTH;
-                int tileY = i / TILEMAP_HEIGHT;
+                int tileY = i / TILEMAP_WIDTH;
 
                 int drawX = 601 + PANEL_MARGIN + tileX * Constants.TILE_SIZE;
                 int drawY = PANEL_MARGIN + tileY * Constants.TILE_SIZE;
 
                 DrawTile(tileID, drawX, drawY);
+
+                // Debug
+                //string csvString = "";
+                //for (var j = 0; j < 10; j++)
+                //{
+                //    var start = j * TILEMAP_WIDTH;
+                //    var end = start + TILEMAP_WIDTH;
+                //    var slice = tilemap[start..end];
+                //    csvString += string.Join(" ", slice);
+                //    csvString += "\n";
+                //}
+                //Console.WriteLine(csvString);
             }
         }
 
@@ -120,9 +132,6 @@ public class Tilemap(Tileset tileset)
 
         Rectangle source = new Rectangle(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.TILE_SIZE, Constants.TILE_SIZE);
         Rectangle dest = new Rectangle(posX, posY, Constants.TILE_SIZE, Constants.TILE_SIZE);
-
-        Console.WriteLine(source);
-        Console.WriteLine(dest);
 
         Raylib.DrawTexturePro(tileset.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
     }
