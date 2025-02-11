@@ -9,20 +9,23 @@ public class Tileset
     const int TILESET_PANEL_HEIGHT = 600;
     const int PANEL_MARGIN = 25;
 
-    private Texture2D tileset;
-    private Vector2? selectedTile;
+    private Texture2D tilesetTexture;
+    private int? selectedTile;
     private Vector2? selectedTilePixelPos;
     private Camera2D camera;
+
+    public int? SelectedTile { get => selectedTile; }
+    public Texture2D TilesetTexture { get => tilesetTexture; }
 
     public void GameStartup()
     {
         // Load tileset
         Image image = Raylib.LoadImage("./assets/Tileset_Grass.png");
-        tileset = Raylib.LoadTextureFromImage(image);
+        tilesetTexture = Raylib.LoadTextureFromImage(image);
         Raylib.UnloadImage(image);
 
-        float tilesetWidth = tileset.Width;
-        float tilesetHeight = tileset.Height;
+        float tilesetWidth = tilesetTexture.Width;
+        float tilesetHeight = tilesetTexture.Height;
 
         // Calculate zoom to fit width and height inside panel
         float zoomToFitWidth = (TILESET_PANEL_WIDTH - PANEL_MARGIN * 2) / tilesetWidth;
@@ -67,8 +70,11 @@ public class Tileset
                 var tileX = (int)worldMousePos.X / Constants.TILE_SIZE;
                 var tileY = (int)worldMousePos.Y / Constants.TILE_SIZE;
 
-                selectedTile = new Vector2(tileX, tileY);
+                var tilesPerRow = tilesetTexture.Width / Constants.TILE_SIZE;
+
+                selectedTile = tileY * tilesPerRow + tileX;
                 selectedTilePixelPos = new Vector2(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE);
+                Console.WriteLine($"Selected tile {selectedTile}");
             }
         }
     }
@@ -81,7 +87,7 @@ public class Tileset
 
         Raylib.BeginMode2D(camera);
 
-        Raylib.DrawTexture(tileset, 0, 0, Color.White);
+        Raylib.DrawTexture(tilesetTexture, 0, 0, Color.White);
 
         // Draw over highlight
         (var isInside, var worldMousePos) = IsMouseInsideTileset();
@@ -109,7 +115,7 @@ public class Tileset
         var mousePos = Raylib.GetMousePosition();
         var worldMousePos = Raylib.GetScreenToWorld2D(mousePos, camera);
 
-        var isInside = worldMousePos.X >= 0 && worldMousePos.Y >= 0 && worldMousePos.X <= tileset.Width && worldMousePos.Y <= tileset.Height;
+        var isInside = worldMousePos.X >= 0 && worldMousePos.Y >= 0 && worldMousePos.X <= tilesetTexture.Width && worldMousePos.Y <= tilesetTexture.Height;
 
         return (isInside, worldMousePos);
     }
