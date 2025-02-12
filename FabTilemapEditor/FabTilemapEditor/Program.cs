@@ -2,7 +2,7 @@
 using Raylib_cs;
 
 
-Raylib.InitWindow(Constants.screenWidth, Constants.screenHeight, "Hello World");
+Raylib.InitWindow(Constants.ScreenWidth, Constants.ScreenHeight, "Hello World");
 var tileset = new Tileset();
 var layers = new Layers();
 var tilemap = new Tilemap(tileset);

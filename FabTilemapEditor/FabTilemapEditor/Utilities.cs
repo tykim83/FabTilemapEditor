@@ -7,8 +7,8 @@ public static class Utilities
 {
     public static void DrawTile(Texture2D tileset, int pos_x, int pos_y, int texture_index_x, int texture_index_y)
     {
-        var source = new Rectangle(texture_index_x * Constants.TILE_SIZE, texture_index_y * Constants.TILE_SIZE, Constants.TILE_SIZE, Constants.TILE_SIZE);
-        var dest = new Rectangle(pos_x, pos_y, Constants.TILE_SIZE, Constants.TILE_SIZE);
+        var source = new Rectangle(texture_index_x * Constants.TileSize, texture_index_y * Constants.TileSize, Constants.TileSize, Constants.TileSize);
+        var dest = new Rectangle(pos_x, pos_y, Constants.TileSize, Constants.TileSize);
         var origin = new Vector2(0, 0);
         Raylib.DrawTexturePro(tileset, source, dest, origin, 0.0f, Color.White);
     }
@@ -20,30 +20,26 @@ public static class Utilities
         int availablePanelWidth = panelWidth - 20;
         int availablePanelHeight = panelHeight - 20;
 
-        var backgroundColor = new Color(70, 70, 70, 255);
-        var panelColor = new Color(51, 51, 51, 255);
-        var shadowColor = new Color(0, 0, 0, 80);
-
         // Draw Background
-        Raylib.DrawRectangle(startingX, startingY, panelWidth, panelHeight, backgroundColor);
+        Raylib.DrawRectangle(startingX, startingY, panelWidth, panelHeight, Constants.BackgroundColor);
 
         // Draw main panel
-        Raylib.DrawRectangleRoundedLinesEx(new Rectangle(panelX + 6, panelY + 6, availablePanelWidth - 12, availablePanelHeight - 12), 0.05f, 32, 6, panelColor);
+        Raylib.DrawRectangleRoundedLinesEx(new Rectangle(panelX + 6, panelY + 6, availablePanelWidth - 12, availablePanelHeight - 12), 0.02f, 16, 6, Constants.PanelColor);
 
         // Draw main panel background
-        Raylib.DrawRectangleRounded(new Rectangle(panelX + 6, panelY + 46, availablePanelWidth - 12, availablePanelHeight - 52), 0.05f, 32, panelColor);
+        Raylib.DrawRectangleRounded(new Rectangle(panelX + 6, panelY + 46, availablePanelWidth - 12, availablePanelHeight - 52), 0.02f, 16, Constants.PanelColor);
 
         // Draw the main panel shadow
-        Raylib.DrawRectangleRoundedLinesEx(new Rectangle(panelX + 8, panelY + 12, availablePanelWidth - 16, availablePanelHeight - 20), 0.05f, 32, 4, shadowColor);
+        Raylib.DrawRectangleRoundedLinesEx(new Rectangle(panelX + 8, panelY + 12, availablePanelWidth - 16, availablePanelHeight - 20), 0.02f, 16, 4, Constants.ShadowColor);
 
         // Draw title bar
         var titleBar = new Rectangle(panelX + 6, panelY + 6, availablePanelWidth - 12, 47);
-        Raylib.DrawRectangleRounded(titleBar, 0.5f, 32, Color.SkyBlue);
-        Raylib.DrawRectangle(panelX + 6, panelY + 46, availablePanelWidth - 12, 7, panelColor);
+        Raylib.DrawRectangleRounded(titleBar, 0.2f, 16, Color.SkyBlue);
+        Raylib.DrawRectangle(panelX + 6, panelY + 46, availablePanelWidth - 12, 7, Constants.PanelColor);
 
         // Complete Shadow
-        Raylib.DrawLineEx(new Vector2(panelX + 7, panelY + 46), new Vector2(panelX + 7, panelY + 53), 2, shadowColor);
-        Raylib.DrawLineEx(new Vector2(availablePanelWidth + 3, panelY + 46), new Vector2(availablePanelWidth + 3, panelY + 53), 2, shadowColor);
+        Raylib.DrawLineEx(new Vector2(panelX + 7, panelY + 46), new Vector2(panelX + 7, panelY + 53), 2, Constants.ShadowColor);
+        Raylib.DrawLineEx(new Vector2(availablePanelWidth + 3, panelY + 46), new Vector2(availablePanelWidth + 3, panelY + 53), 2, Constants.ShadowColor);
 
         // Title Text
         var textWidth = Raylib.MeasureText(titleText, 24);

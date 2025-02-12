@@ -5,24 +5,23 @@ namespace FabTilemapEditor;
 
 public class Layers()
 {
-    const int LAYERS_STARTING_X = 0;
-    const int LAYERS_STARTING_Y = 750;
-    const int LAYERS_PANEL_WIDTH = 600;
-    const int LAYERS_PANEL_HEIGHT = 330;
-    const int PANEL_MARGIN = 25;
+    const int PANEL_X = 0;
+    const int PANEL_Y = 750;
+    const int PANEL_WIDTH = 600;
+    const int PANEL_HEIGHT = 330;
 
     private Camera2D camera;
 
     public void GameStartup()
     {
 
-        float centerX = LAYERS_STARTING_X + PANEL_MARGIN + (LAYERS_PANEL_WIDTH) / 2;
-        float centerY = LAYERS_STARTING_Y + PANEL_MARGIN + (LAYERS_PANEL_HEIGHT) / 2;
+        float centerX = PANEL_X + PANEL_WIDTH / 2;
+        float centerY = PANEL_Y + PANEL_HEIGHT / 2;
 
         camera = new Camera2D
         {
             Target = new Vector2(centerX, centerY),
-            Offset = new Vector2(LAYERS_STARTING_X + LAYERS_PANEL_WIDTH / 2, LAYERS_STARTING_Y + LAYERS_PANEL_HEIGHT / 2),
+            Offset = new Vector2(PANEL_X + PANEL_WIDTH / 2, PANEL_Y + PANEL_HEIGHT / 2),
             Rotation = 0.0f,
             Zoom = 1.0f,
         };
@@ -50,7 +49,7 @@ public class Layers()
 
         Raylib.EndMode2D();
 
-        Utilities.RenderSectionUI(LAYERS_STARTING_X, LAYERS_STARTING_Y, LAYERS_PANEL_WIDTH, LAYERS_PANEL_HEIGHT, "Layers");
+        Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
     }
 
     //private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset()
