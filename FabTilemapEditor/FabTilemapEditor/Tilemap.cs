@@ -5,7 +5,7 @@ namespace FabTilemapEditor;
 
 public class Tilemap(Tileset tileset)
 {
-    const int TILEMAP_STARTING_WIDTH = 601;
+    const int TILEMAP_STARTING_X = 601;
     const int TILEMAP_PANEL_WIDTH = 1320;
     const int TILEMAP_PANEL_HEIGHT = 1080;
     const int PANEL_MARGIN = 100;
@@ -26,13 +26,13 @@ public class Tilemap(Tileset tileset)
         float zoomToFitWidth = availableWidth / (TILEMAP_WIDTH * Constants.TILE_SIZE);
         float zoomToFitHeight = availableHeight / (TILEMAP_HEIGHT * Constants.TILE_SIZE);
         float finalZoom = Math.Min(zoomToFitWidth, zoomToFitHeight);
-        float centerX = TILEMAP_STARTING_WIDTH + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE) / 2;
+        float centerX = TILEMAP_STARTING_X + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE) / 2;
         float centerY = PANEL_MARGIN + (TILEMAP_HEIGHT * Constants.TILE_SIZE) / 2;
 
         camera = new Camera2D
         {
             Target = new Vector2(centerX, centerY),
-            Offset = new Vector2(TILEMAP_STARTING_WIDTH + TILEMAP_PANEL_WIDTH / 2, TILEMAP_PANEL_HEIGHT / 2),
+            Offset = new Vector2(TILEMAP_STARTING_X + TILEMAP_PANEL_WIDTH / 2, TILEMAP_PANEL_HEIGHT / 2),
             Rotation = 0.0f,
             Zoom = finalZoom
         };
@@ -46,7 +46,7 @@ public class Tilemap(Tileset tileset)
             (var isInside, var worldMousePos) = IsMouseInsideTileset();
             if (isInside && tileset.SelectedTile is not null)
             {
-                var tileX = (int)(worldMousePos.X - PANEL_MARGIN - TILEMAP_STARTING_WIDTH) / Constants.TILE_SIZE;
+                var tileX = (int)(worldMousePos.X - PANEL_MARGIN - TILEMAP_STARTING_X) / Constants.TILE_SIZE;
                 var tileY = (int)(worldMousePos.Y - PANEL_MARGIN) / Constants.TILE_SIZE;
 
                 tilemap[TilemapIndex(tileX, tileY)] = tileset.SelectedTile.Value;
@@ -91,7 +91,7 @@ public class Tilemap(Tileset tileset)
         // Draw vertical lines
         for (int i = 0; i <= TILEMAP_WIDTH; i++)
         {
-            int xPos = TILEMAP_STARTING_WIDTH + PANEL_MARGIN + (i * Constants.TILE_SIZE);
+            int xPos = TILEMAP_STARTING_X + PANEL_MARGIN + (i * Constants.TILE_SIZE);
             Raylib.DrawLine(xPos, PANEL_MARGIN, xPos, PANEL_MARGIN + (TILEMAP_HEIGHT * Constants.TILE_SIZE), gridColor);
         }
 
@@ -99,7 +99,7 @@ public class Tilemap(Tileset tileset)
         for (int j = 0; j <= TILEMAP_HEIGHT; j++)
         {
             int yPos = PANEL_MARGIN + (j * Constants.TILE_SIZE);
-            Raylib.DrawLine(TILEMAP_STARTING_WIDTH + PANEL_MARGIN, yPos, TILEMAP_STARTING_WIDTH + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE), yPos, gridColor);
+            Raylib.DrawLine(TILEMAP_STARTING_X + PANEL_MARGIN, yPos, TILEMAP_STARTING_X + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE), yPos, gridColor);
         }
 
         Raylib.EndMode2D();
@@ -113,9 +113,9 @@ public class Tilemap(Tileset tileset)
         var mousePos = Raylib.GetMousePosition();
         var worldMousePos = Raylib.GetScreenToWorld2D(mousePos, camera);
 
-        var isInside = worldMousePos.X >= (TILEMAP_STARTING_WIDTH + PANEL_MARGIN)
+        var isInside = worldMousePos.X >= (TILEMAP_STARTING_X + PANEL_MARGIN)
             && worldMousePos.Y >= PANEL_MARGIN
-            && worldMousePos.X <= TILEMAP_STARTING_WIDTH + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE)
+            && worldMousePos.X <= TILEMAP_STARTING_X + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE)
             && worldMousePos.Y <= PANEL_MARGIN + (TILEMAP_HEIGHT * Constants.TILE_SIZE);
 
         return (isInside, worldMousePos);

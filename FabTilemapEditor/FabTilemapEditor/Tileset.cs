@@ -6,8 +6,7 @@ namespace FabTilemapEditor;
 public class Tileset
 {
     const int TILESET_PANEL_WIDTH = 600;
-    const int TILESET_PANEL_HEIGHT = 600;
-    const int PANEL_MARGIN = 25;
+    const int TILESET_PANEL_HEIGHT = 750;
 
     private Texture2D tilesetTexture;
     private int? selectedTile;
@@ -19,6 +18,14 @@ public class Tileset
 
     public void GameStartup()
     {
+        // Calculate available space
+        var availableSpace = Utilities.RenderSectionUI(0, 0, TILESET_PANEL_WIDTH, TILESET_PANEL_HEIGHT, "Tileset");
+
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+        var width = (int)availableSpace.Width;
+        var height = (int)availableSpace.Height;
+
         // Load tileset
         Image image = Raylib.LoadImage("./assets/Tileset_Grass.png");
         tilesetTexture = Raylib.LoadTextureFromImage(image);
@@ -28,15 +35,15 @@ public class Tileset
         float tilesetHeight = tilesetTexture.Height;
 
         // Calculate zoom to fit width and height inside panel
-        float zoomToFitWidth = (TILESET_PANEL_WIDTH - PANEL_MARGIN * 2) / tilesetWidth;
-        float zoomToFitHeight = (TILESET_PANEL_HEIGHT - PANEL_MARGIN * 2) / tilesetHeight;
+        float zoomToFitWidth = width / tilesetWidth;
+        float zoomToFitHeight = height / tilesetHeight;
         float finalZoom = Math.Min(zoomToFitWidth, zoomToFitHeight);
 
         // Camera for zooming/panning tileset
         camera = new Camera2D
         {
             Target = new Vector2(tilesetWidth / 2, tilesetHeight / 2),
-            Offset = new Vector2(TILESET_PANEL_WIDTH / 2, TILESET_PANEL_HEIGHT / 2),
+            Offset = new Vector2(startingX + width / 2, startingY + height / 2),
             Rotation = 0.0f,
             Zoom = finalZoom
         };
@@ -62,7 +69,7 @@ public class Tileset
         }
 
         // Try Select Tile on Click
-        if (Raylib.IsMouseButtonDown(MouseButton.Left))
+        if (Raylib.IsMouseButtonPressed(MouseButton.Left))
         {
             (var isInside, var worldMousePos) = IsMouseInsideTileset();
             if (isInside)
@@ -81,9 +88,14 @@ public class Tileset
 
     public void GameRender()
     {
-        Raylib.DrawRectangle(0, 0, TILESET_PANEL_WIDTH, TILESET_PANEL_HEIGHT, Color.LightGray);
+        var availableSpace = Utilities.RenderSectionUI(0, 0, TILESET_PANEL_WIDTH, TILESET_PANEL_HEIGHT, "Tileset");
 
-        Raylib.BeginScissorMode(PANEL_MARGIN, PANEL_MARGIN, TILESET_PANEL_WIDTH - (PANEL_MARGIN * 2), TILESET_PANEL_HEIGHT - (PANEL_MARGIN * 2));
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+        var width = (int)availableSpace.Width;
+        var height = (int)availableSpace.Height;
+
+        Raylib.BeginScissorMode(startingX, startingY, width, height);
 
         Raylib.BeginMode2D(camera);
 
@@ -106,8 +118,6 @@ public class Tileset
         Raylib.EndMode2D();
 
         Raylib.EndScissorMode();
-
-        Raylib.DrawRectangleLines(0, 0, TILESET_PANEL_WIDTH, TILESET_PANEL_HEIGHT, Color.Black);
     }
 
     private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset()
