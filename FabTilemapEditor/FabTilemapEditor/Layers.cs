@@ -3,17 +3,32 @@ using System.Numerics;
 
 namespace FabTilemapEditor;
 
-public class Layers()
+public class Layers
 {
     const int PANEL_X = 0;
-    const int PANEL_Y = 750;
+    const int PANEL_Y = 700;
     const int PANEL_WIDTH = 600;
-    const int PANEL_HEIGHT = 330;
+    const int PANEL_HEIGHT = 380;
 
     private Camera2D camera;
+    private TextButton button;
+
+    private List<string> layers = [];
+
+    public Layers()
+    {
+        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+        var width = (int)availableSpace.Width;
+        var height = (int)availableSpace.Height;
+
+        button = new TextButton(startingX + 10, startingY + height - 50, 150, 40, "Add Layer", () => { Console.WriteLine("click"); });
+    }
 
     public void GameStartup()
     {
+        layers.Add("background");
 
         float centerX = PANEL_X + PANEL_WIDTH / 2;
         float centerY = PANEL_Y + PANEL_HEIGHT / 2;
@@ -29,6 +44,7 @@ public class Layers()
 
     public void HandleInput()
     {
+        button.Update();
         // Try Select Tile on Click
         if (Raylib.IsMouseButtonDown(MouseButton.Left))
         {
@@ -47,9 +63,11 @@ public class Layers()
     {
         Raylib.BeginMode2D(camera);
 
-        Raylib.EndMode2D();
-
         Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
+
+        button.Draw();
+
+        Raylib.EndMode2D();
     }
 
     //private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset()

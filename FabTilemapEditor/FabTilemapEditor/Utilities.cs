@@ -34,7 +34,7 @@ public static class Utilities
 
         // Draw title bar
         var titleBar = new Rectangle(panelX + 6, panelY + 6, availablePanelWidth - 12, 47);
-        Raylib.DrawRectangleRounded(titleBar, 0.2f, 16, Color.SkyBlue);
+        Raylib.DrawRectangleRounded(titleBar, 0.2f, 16, Constants.TitleBar);
         Raylib.DrawRectangle(panelX + 6, panelY + 46, availablePanelWidth - 12, 7, Constants.PanelColor);
 
         // Complete Shadow

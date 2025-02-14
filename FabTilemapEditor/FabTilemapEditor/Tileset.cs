@@ -8,7 +8,7 @@ public class Tileset
     const int PANEL_X = 0;
     const int PANEL_Y = 0;
     const int PANEL_WIDTH = 600;
-    const int PANEL_HEIGHT = 750;
+    const int PANEL_HEIGHT = 700;
 
     private Texture2D tilesetTexture;
     private int? selectedTile;

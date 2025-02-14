@@ -12,4 +12,6 @@ public static class Constants
     public static readonly Color BackgroundColor = new(70, 70, 70, 255);
     public static readonly Color PanelColor = new(51, 51, 51, 255);
     public static readonly Color ShadowColor = new(0, 0, 0, 80);
+    public static readonly Color ButtonColor = new(85, 85, 85, 255);
+    public static readonly Color TitleBar = Color.SkyBlue;
 }
