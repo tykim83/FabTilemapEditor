@@ -25,13 +25,13 @@ public class TextButton(float x, float y, float width, float height, string text
     public void Draw()
     {
         // Shadow effect
-        Raylib.DrawRectangleRec(new Rectangle(Rect.X + 4, Rect.Y + 4, Rect.Width, Rect.Height), Constants.ShadowColor);
+        Raylib.DrawRectangleRounded(new Rectangle(Rect.X + 4, Rect.Y + 4, Rect.Width, Rect.Height), 0.5f, 16, Constants.ShadowColor);
 
         // Button color based on state
         Color buttonColor = isHovered ? Constants.TitleBar : Constants.ButtonColor;
 
-        Raylib.DrawRectangleRec(Rect, buttonColor);
-        Raylib.DrawRectangleLinesEx(Rect, 2, Color.Black);
+        Raylib.DrawRectangleRounded(Rect, 0.5f, 16, buttonColor);
+        Raylib.DrawRectangleRoundedLinesEx(Rect, 0.5f, 16, 2, Color.Black);
 
         // Centered text
         int textWidth = Raylib.MeasureText(text, 16);

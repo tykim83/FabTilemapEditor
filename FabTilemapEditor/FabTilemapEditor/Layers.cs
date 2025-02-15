@@ -23,7 +23,7 @@ public class Layers
         var width = (int)availableSpace.Width;
         var height = (int)availableSpace.Height;
 
-        button = new TextButton(startingX + 10, startingY + height - 50, 150, 40, "Add Layer", () => { Console.WriteLine("click"); });
+        button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", () => { Console.WriteLine("click"); });
     }
 
     public void GameStartup()
