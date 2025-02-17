@@ -5,10 +5,10 @@ namespace FabTilemapEditor;
 
 public class Tilemap(Tileset tileset)
 {
-    const int TILEMAP_STARTING_WIDTH = 601;
-    const int TILEMAP_PANEL_WIDTH = 1320;
-    const int TILEMAP_PANEL_HEIGHT = 1080;
-    const int PANEL_MARGIN = 100;
+    const int PANEL_X = 600;
+    const int PANEL_Y = 0;
+    const int PANEL_WIDTH = 1320;
+    const int PANEL_HEIGHT = 1080;
 
     const int TILEMAP_WIDTH = 15;
     const int TILEMAP_HEIGHT = 10;
@@ -20,19 +20,23 @@ public class Tilemap(Tileset tileset)
     {
         Array.Fill(tilemap, -1);
 
-        float availableWidth = TILEMAP_PANEL_WIDTH - (PANEL_MARGIN * 2);
-        float availableHeight = TILEMAP_PANEL_HEIGHT - (PANEL_MARGIN * 2);
+        // Calculate available space
+        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+        var width = (int)availableSpace.Width;
+        var height = (int)availableSpace.Height;
 
-        float zoomToFitWidth = availableWidth / (TILEMAP_WIDTH * Constants.TILE_SIZE);
-        float zoomToFitHeight = availableHeight / (TILEMAP_HEIGHT * Constants.TILE_SIZE);
+        float zoomToFitWidth = width / (TILEMAP_WIDTH * Constants.TileSize);
+        float zoomToFitHeight = height / (TILEMAP_HEIGHT * Constants.TileSize);
         float finalZoom = Math.Min(zoomToFitWidth, zoomToFitHeight);
-        float centerX = TILEMAP_STARTING_WIDTH + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE) / 2;
-        float centerY = PANEL_MARGIN + (TILEMAP_HEIGHT * Constants.TILE_SIZE) / 2;
+        float centerX = startingX + (TILEMAP_WIDTH * Constants.TileSize) / 2;
+        float centerY = startingY + (TILEMAP_HEIGHT * Constants.TileSize) / 2;
 
         camera = new Camera2D
         {
             Target = new Vector2(centerX, centerY),
-            Offset = new Vector2(TILEMAP_STARTING_WIDTH + TILEMAP_PANEL_WIDTH / 2, TILEMAP_PANEL_HEIGHT / 2),
+            Offset = new Vector2(startingX + width / 2, startingY + height / 2),
             Rotation = 0.0f,
             Zoom = finalZoom
         };
@@ -43,11 +47,15 @@ public class Tilemap(Tileset tileset)
         // Try Select Tile on Click
         if (Raylib.IsMouseButtonDown(MouseButton.Left))
         {
-            (var isInside, var worldMousePos) = IsMouseInsideTileset();
+            var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
+            var startingX = (int)availableSpace.X;
+            var startingY = (int)availableSpace.Y;
+
+            (var isInside, var worldMousePos) = IsMouseInsideTileset(availableSpace);
             if (isInside && tileset.SelectedTile is not null)
             {
-                var tileX = (int)(worldMousePos.X - PANEL_MARGIN - TILEMAP_STARTING_WIDTH) / Constants.TILE_SIZE;
-                var tileY = (int)(worldMousePos.Y - PANEL_MARGIN) / Constants.TILE_SIZE;
+                int tileX = (int)((worldMousePos.X - startingX) / Constants.TileSize);
+                int tileY = (int)((worldMousePos.Y - startingY) / Constants.TileSize);
 
                 tilemap[TilemapIndex(tileX, tileY)] = tileset.SelectedTile.Value;
             }
@@ -56,6 +64,12 @@ public class Tilemap(Tileset tileset)
 
     public void GameRender()
     {
+        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+        var width = (int)availableSpace.Width;
+        var height = (int)availableSpace.Height;
+
         Raylib.BeginMode2D(camera);
 
         Color gridColor = Color.Gray;
@@ -69,54 +83,45 @@ public class Tilemap(Tileset tileset)
                 int tileX = i % TILEMAP_WIDTH;
                 int tileY = i / TILEMAP_WIDTH;
 
-                int drawX = 601 + PANEL_MARGIN + tileX * Constants.TILE_SIZE;
-                int drawY = PANEL_MARGIN + tileY * Constants.TILE_SIZE;
+                int drawX = startingX + tileX * Constants.TileSize;
+                int drawY = startingY + tileY * Constants.TileSize;
 
                 DrawTile(tileID, drawX, drawY);
-
-                // Debug
-                //string csvString = "";
-                //for (var j = 0; j < 10; j++)
-                //{
-                //    var start = j * TILEMAP_WIDTH;
-                //    var end = start + TILEMAP_WIDTH;
-                //    var slice = tilemap[start..end];
-                //    csvString += string.Join(" ", slice);
-                //    csvString += "\n";
-                //}
-                //Console.WriteLine(csvString);
             }
         }
 
         // Draw vertical lines
         for (int i = 0; i <= TILEMAP_WIDTH; i++)
         {
-            int xPos = TILEMAP_STARTING_WIDTH + PANEL_MARGIN + (i * Constants.TILE_SIZE);
-            Raylib.DrawLine(xPos, PANEL_MARGIN, xPos, PANEL_MARGIN + (TILEMAP_HEIGHT * Constants.TILE_SIZE), gridColor);
+            int xPos = startingX + (i * Constants.TileSize);
+            Raylib.DrawLine(xPos, startingY, xPos, startingY + (TILEMAP_HEIGHT * Constants.TileSize), gridColor);
         }
 
         // Draw horizontal lines
         for (int j = 0; j <= TILEMAP_HEIGHT; j++)
         {
-            int yPos = PANEL_MARGIN + (j * Constants.TILE_SIZE);
-            Raylib.DrawLine(TILEMAP_STARTING_WIDTH + PANEL_MARGIN, yPos, TILEMAP_STARTING_WIDTH + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE), yPos, gridColor);
+            int yPos = startingY + (j * Constants.TileSize);
+            Raylib.DrawLine(startingX, yPos, startingX + (TILEMAP_WIDTH * Constants.TileSize), yPos, gridColor);
         }
 
         Raylib.EndMode2D();
 
         // Draw a black border around the tilemap
-        Raylib.DrawRectangleLines(601, 0, TILEMAP_PANEL_WIDTH, TILEMAP_PANEL_HEIGHT, Color.Black);
+        Raylib.DrawRectangleLines(startingX, startingY, width, height, Color.Red);
     }
 
-    private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset()
+    private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset(Rectangle availableSpace)
     {
         var mousePos = Raylib.GetMousePosition();
         var worldMousePos = Raylib.GetScreenToWorld2D(mousePos, camera);
 
-        var isInside = worldMousePos.X >= (TILEMAP_STARTING_WIDTH + PANEL_MARGIN)
-            && worldMousePos.Y >= PANEL_MARGIN
-            && worldMousePos.X <= TILEMAP_STARTING_WIDTH + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE)
-            && worldMousePos.Y <= PANEL_MARGIN + (TILEMAP_HEIGHT * Constants.TILE_SIZE);
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+
+        var isInside = worldMousePos.X >= startingX
+            && worldMousePos.Y >= startingY
+            && worldMousePos.X <= startingX + (TILEMAP_WIDTH * Constants.TileSize)
+            && worldMousePos.Y <= startingY + (TILEMAP_HEIGHT * Constants.TileSize);
 
         return (isInside, worldMousePos);
     }
@@ -125,13 +130,13 @@ public class Tilemap(Tileset tileset)
 
     private void DrawTile(int tileID, int posX, int posY)
     {
-        int tilesPerRow = tileset.TilesetTexture.Width / Constants.TILE_SIZE;
+        int tilesPerRow = tileset.TilesetTexture.Width / Constants.TileSize;
 
         int tileX = tileID % tilesPerRow;
         int tileY = tileID / tilesPerRow;
 
-        Rectangle source = new Rectangle(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.TILE_SIZE, Constants.TILE_SIZE);
-        Rectangle dest = new Rectangle(posX, posY, Constants.TILE_SIZE, Constants.TILE_SIZE);
+        Rectangle source = new Rectangle(tileX * Constants.TileSize, tileY * Constants.TileSize, Constants.TileSize, Constants.TileSize);
+        Rectangle dest = new Rectangle(posX, posY, Constants.TileSize, Constants.TileSize);
 
         Raylib.DrawTexturePro(tileset.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
     }

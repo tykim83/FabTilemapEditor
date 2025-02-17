@@ -5,9 +5,10 @@ namespace FabTilemapEditor;
 
 public class Tileset
 {
-    const int TILESET_PANEL_WIDTH = 600;
-    const int TILESET_PANEL_HEIGHT = 600;
-    const int PANEL_MARGIN = 25;
+    const int PANEL_X = 0;
+    const int PANEL_Y = 0;
+    const int PANEL_WIDTH = 600;
+    const int PANEL_HEIGHT = 700;
 
     private Texture2D tilesetTexture;
     private int? selectedTile;
@@ -19,6 +20,14 @@ public class Tileset
 
     public void GameStartup()
     {
+        // Calculate available space
+        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tileset");
+
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+        var width = (int)availableSpace.Width;
+        var height = (int)availableSpace.Height;
+
         // Load tileset
         Image image = Raylib.LoadImage("./assets/Tileset_Grass.png");
         tilesetTexture = Raylib.LoadTextureFromImage(image);
@@ -28,15 +37,15 @@ public class Tileset
         float tilesetHeight = tilesetTexture.Height;
 
         // Calculate zoom to fit width and height inside panel
-        float zoomToFitWidth = (TILESET_PANEL_WIDTH - PANEL_MARGIN * 2) / tilesetWidth;
-        float zoomToFitHeight = (TILESET_PANEL_HEIGHT - PANEL_MARGIN * 2) / tilesetHeight;
+        float zoomToFitWidth = width / tilesetWidth;
+        float zoomToFitHeight = height / tilesetHeight;
         float finalZoom = Math.Min(zoomToFitWidth, zoomToFitHeight);
 
         // Camera for zooming/panning tileset
         camera = new Camera2D
         {
             Target = new Vector2(tilesetWidth / 2, tilesetHeight / 2),
-            Offset = new Vector2(TILESET_PANEL_WIDTH / 2, TILESET_PANEL_HEIGHT / 2),
+            Offset = new Vector2(startingX + width / 2, startingY + height / 2),
             Rotation = 0.0f,
             Zoom = finalZoom
         };
@@ -62,18 +71,18 @@ public class Tileset
         }
 
         // Try Select Tile on Click
-        if (Raylib.IsMouseButtonDown(MouseButton.Left))
+        if (Raylib.IsMouseButtonPressed(MouseButton.Left))
         {
             (var isInside, var worldMousePos) = IsMouseInsideTileset();
             if (isInside)
             {
-                var tileX = (int)worldMousePos.X / Constants.TILE_SIZE;
-                var tileY = (int)worldMousePos.Y / Constants.TILE_SIZE;
+                var tileX = (int)worldMousePos.X / Constants.TileSize;
+                var tileY = (int)worldMousePos.Y / Constants.TileSize;
 
-                var tilesPerRow = tilesetTexture.Width / Constants.TILE_SIZE;
+                var tilesPerRow = tilesetTexture.Width / Constants.TileSize;
 
                 selectedTile = tileY * tilesPerRow + tileX;
-                selectedTilePixelPos = new Vector2(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE);
+                selectedTilePixelPos = new Vector2(tileX * Constants.TileSize, tileY * Constants.TileSize);
                 Console.WriteLine($"Selected tile {selectedTile}");
             }
         }
@@ -81,9 +90,14 @@ public class Tileset
 
     public void GameRender()
     {
-        Raylib.DrawRectangle(0, 0, TILESET_PANEL_WIDTH, TILESET_PANEL_HEIGHT, Color.LightGray);
+        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tileset");
 
-        Raylib.BeginScissorMode(PANEL_MARGIN, PANEL_MARGIN, TILESET_PANEL_WIDTH - (PANEL_MARGIN * 2), TILESET_PANEL_HEIGHT - (PANEL_MARGIN * 2));
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+        var width = (int)availableSpace.Width;
+        var height = (int)availableSpace.Height;
+
+        Raylib.BeginScissorMode(startingX, startingY, width, height);
 
         Raylib.BeginMode2D(camera);
 
@@ -93,21 +107,19 @@ public class Tileset
         (var isInside, var worldMousePos) = IsMouseInsideTileset();
         if (isInside)
         {
-            var tileX = (int)worldMousePos.X / Constants.TILE_SIZE;
-            var tileY = (int)worldMousePos.Y / Constants.TILE_SIZE;
+            var tileX = (int)worldMousePos.X / Constants.TileSize;
+            var tileY = (int)worldMousePos.Y / Constants.TileSize;
 
-            Raylib.DrawRectangleLines(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.TILE_SIZE, Constants.TILE_SIZE, Color.Red);
+            Raylib.DrawRectangleLines(tileX * Constants.TileSize, tileY * Constants.TileSize, Constants.TileSize, Constants.TileSize, Color.Red);
         }
 
         // Draw Selected tile
         if (selectedTilePixelPos is not null)
-            Raylib.DrawRectangleLines((int)selectedTilePixelPos.Value.X, (int)(selectedTilePixelPos.Value.Y), Constants.TILE_SIZE, Constants.TILE_SIZE, Color.Green);
+            Raylib.DrawRectangleLines((int)selectedTilePixelPos.Value.X, (int)(selectedTilePixelPos.Value.Y), Constants.TileSize, Constants.TileSize, Color.Green);
 
         Raylib.EndMode2D();
 
         Raylib.EndScissorMode();
-
-        Raylib.DrawRectangleLines(0, 0, TILESET_PANEL_WIDTH, TILESET_PANEL_HEIGHT, Color.Black);
     }
 
     private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset()

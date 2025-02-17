@@ -2,11 +2,13 @@
 using Raylib_cs;
 
 
-Raylib.InitWindow(Constants.screenWidth, Constants.screenHeight, "Hello World");
+Raylib.InitWindow(Constants.ScreenWidth, Constants.ScreenHeight, "Hello World");
 var tileset = new Tileset();
+var layers = new Layers();
 var tilemap = new Tilemap(tileset);
 
 tileset.GameStartup();
+layers.GameStartup();
 tilemap.GameStartup();
 
 while (!Raylib.WindowShouldClose())
@@ -15,9 +17,11 @@ while (!Raylib.WindowShouldClose())
     Raylib.ClearBackground(Color.White);
 
     tileset.HandleInput();
+    layers.HandleInput();
     tilemap.HandleInput();
 
     tileset.GameRender();
+    layers.GameRender();
     tilemap.GameRender();
 
     Raylib.EndDrawing();
