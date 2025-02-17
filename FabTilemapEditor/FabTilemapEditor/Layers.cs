@@ -13,7 +13,17 @@ public class Layers
     private Camera2D camera;
     private TextButton button;
 
+    // Layers fields
+    private int activeLayer = 0;
     private List<string> layers = [];
+    private List<Rectangle> layersRectangles = [];
+
+    // Drag fields
+    private int? draggingLayerIndex = null;
+    private float dragOffsetY = 0;
+    private float dragStartTime = 0f;
+    private bool isDragging = false;
+    private const float DRAG_DELAY = 0.15f;
 
     public Layers()
     {
@@ -23,12 +33,13 @@ public class Layers
         var width = (int)availableSpace.Width;
         var height = (int)availableSpace.Height;
 
-        button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", () => { Console.WriteLine("click"); });
+        button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", AddLayer);
     }
 
     public void GameStartup()
     {
         layers.Add("background");
+        layers.Add("test");
 
         float centerX = PANEL_X + PANEL_WIDTH / 2;
         float centerY = PANEL_Y + PANEL_HEIGHT / 2;
@@ -40,22 +51,93 @@ public class Layers
             Rotation = 0.0f,
             Zoom = 1.0f,
         };
+
+        UpdateLayerReacts();
     }
 
     public void HandleInput()
     {
         button.Update();
-        // Try Select Tile on Click
-        if (Raylib.IsMouseButtonDown(MouseButton.Left))
-        {
-            //(var isInside, var worldMousePos) = IsMouseInsideTileset();
-            //if (isInside && tileset.SelectedTile is not null)
-            //{
-            //    var tileX = (int)(worldMousePos.X - PANEL_MARGIN - TILEMAP_STARTING_X) / Constants.TILE_SIZE;
-            //    var tileY = (int)(worldMousePos.Y - PANEL_MARGIN) / Constants.TILE_SIZE;
 
-            //    tilemap[TilemapIndex(tileX, tileY)] = tileset.SelectedTile.Value;
-            //}
+        Vector2 mousePos = Raylib.GetMousePosition();
+
+        // Init Drag Layer with Delay
+        if (Raylib.IsMouseButtonPressed(MouseButton.Left))
+        {
+            for (int i = 0; i < layersRectangles.Count; i++)
+            {
+                if (Raylib.CheckCollisionPointRec(mousePos, layersRectangles[i]))
+                {
+                    draggingLayerIndex = i;
+                    dragOffsetY = mousePos.Y - layersRectangles[i].Y;
+                    dragStartTime = (float)Raylib.GetTime();
+                    isDragging = false;
+                    break;
+                }
+            }
+        }
+
+        // Start Drag Layer
+        if (draggingLayerIndex.HasValue && !isDragging)
+        {
+            if (Raylib.GetTime() - dragStartTime > DRAG_DELAY)
+                isDragging = true;
+        }
+
+        // Drag Layer 
+        if (isDragging && draggingLayerIndex.HasValue)
+        {
+            int index = draggingLayerIndex.Value;
+            var draggedRect = layersRectangles[index];
+            draggedRect.Y = mousePos.Y - dragOffsetY;
+            layersRectangles[index] = draggedRect;
+
+            // Swap layers
+            for (int i = 0; i < layersRectangles.Count; i++)
+            {
+                if (i != index)
+                {
+                    float halfHeight = layersRectangles[i].Height / 2;
+                    float centerY = layersRectangles[i].Y + halfHeight;
+
+                    if ((index > i && layersRectangles[index].Y < centerY) ||
+                        (index < i && layersRectangles[index].Y + layersRectangles[index].Height > centerY))
+                    {
+                        if (activeLayer == i)
+                            activeLayer = index;
+                        else if (activeLayer == index)
+                            activeLayer = i;
+
+                        (layers[index], layers[i]) = (layers[i], layers[index]);
+                        UpdateLayerReacts();
+                        draggingLayerIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (Raylib.IsMouseButtonReleased(MouseButton.Left))
+        {
+            // Set active if only click
+            if (!isDragging && draggingLayerIndex.HasValue)
+            {
+                for (int i = 0; i < layersRectangles.Count; i++)
+                {
+                    if (Raylib.CheckCollisionPointRec(mousePos, layersRectangles[i]))
+                    {
+                        activeLayer = i;
+                        break;
+                    }
+                }
+            }
+
+            // Release Drag Layer
+            draggingLayerIndex = null;
+            dragOffsetY = 0;
+            isDragging = false;
+
+            UpdateLayerReacts();
         }
     }
 
@@ -65,36 +147,42 @@ public class Layers
 
         Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
 
+        for (var i = 0; i < layers.Count; i++)
+        {
+            var layerRectangle = layersRectangles[i];
+            var text = layers[i];
+
+            var color = i == activeLayer ? Color.LightGray : Color.DarkGray;
+            Raylib.DrawRectangleRec(layerRectangle, color);
+            Raylib.DrawRectangleLinesEx(layerRectangle, 1, Color.LightGray);
+
+            // Centered text
+            int textX = (int)layerRectangle.X + 40;
+            int textY = (int)(layerRectangle.Y + (layerRectangle.Height / 2) - 8);
+            Raylib.DrawText(text, textX, textY, 16, Color.White);
+        }
+
         button.Draw();
 
         Raylib.EndMode2D();
     }
 
-    //private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset()
-    //{
-    //    var mousePos = Raylib.GetMousePosition();
-    //    var worldMousePos = Raylib.GetScreenToWorld2D(mousePos, camera);
+    private void UpdateLayerReacts()
+    {
+        layersRectangles.Clear();
 
-    //    var isInside = worldMousePos.X >= (TILEMAP_STARTING_X + PANEL_MARGIN)
-    //        && worldMousePos.Y >= PANEL_MARGIN
-    //        && worldMousePos.X <= TILEMAP_STARTING_X + PANEL_MARGIN + (TILEMAP_WIDTH * Constants.TILE_SIZE)
-    //        && worldMousePos.Y <= PANEL_MARGIN + (TILEMAP_HEIGHT * Constants.TILE_SIZE);
+        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y;
+        var width = (int)availableSpace.Width;
 
-    //    return (isInside, worldMousePos);
-    //}
+        for (var i = 0; i < layers.Count; i++)
+            layersRectangles.Add(new Rectangle(startingX + 20, startingY + (i * 35) + 20, width - 40, 32));
+    }
 
-    //private int TilemapIndex(int x, int y) => y * TILEMAP_WIDTH + x;
-
-    //private void DrawTile(int tileID, int posX, int posY)
-    //{
-    //    int tilesPerRow = tileset.TilesetTexture.Width / Constants.TILE_SIZE;
-
-    //    int tileX = tileID % tilesPerRow;
-    //    int tileY = tileID / tilesPerRow;
-
-    //    Rectangle source = new Rectangle(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.TILE_SIZE, Constants.TILE_SIZE);
-    //    Rectangle dest = new Rectangle(posX, posY, Constants.TILE_SIZE, Constants.TILE_SIZE);
-
-    //    Raylib.DrawTexturePro(tileset.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
-    //}
+    private void AddLayer()
+    {
+        layers.Add("new layer");
+        UpdateLayerReacts();
+    }
 }

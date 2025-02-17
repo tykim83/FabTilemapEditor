@@ -17,9 +17,7 @@ public class TextButton(float x, float y, float width, float height, string text
         isClicked = isHovered && Raylib.IsMouseButtonPressed(MouseButton.Left);
 
         if (isClicked)
-        {
             onClick?.Invoke();
-        }
     }
 
     public void Draw()
