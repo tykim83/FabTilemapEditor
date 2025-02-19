@@ -12,6 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Assets\gear_icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Tileset_Grass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
