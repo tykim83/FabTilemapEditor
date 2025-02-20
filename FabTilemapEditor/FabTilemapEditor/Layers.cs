@@ -3,6 +3,7 @@ using System.Numerics;
 
 namespace FabTilemapEditor;
 
+//TODO: Need to unload the Texture2D
 public class Layers
 {
     const int PANEL_X = 0;
@@ -10,66 +11,84 @@ public class Layers
     const int PANEL_WIDTH = 600;
     const int PANEL_HEIGHT = 380;
 
-    private Camera2D camera;
-    private TextButton button;
+    private Texture2D gearIcon;
+    private Texture2D eyeIcon;
+    private Texture2D visibleIcon;
+    private TextButton? button;
 
     // Layers fields
     private int activeLayer = 0;
-    private List<string> layers = [];
-    private List<Rectangle> layersRectangles = [];
+    private List<LayerPanel> layersPanels = [];
 
     // Drag fields
     private int? draggingLayerIndex = null;
     private float dragOffsetY = 0;
     private float dragStartTime = 0f;
     private bool isDragging = false;
-    private const float DRAG_DELAY = 0.15f;
+    private const float DRAG_DELAY = 0.20f;
 
-    public Layers()
+    // Tilemap Callbacks
+    Action<int>? clearLayerCallback;
+    Action<int>? removeLayerCallback;
+    Action<int>? toggleLayerVisibilityCallback;
+
+    public void SetupClearLayerCallback(Action<int> action) => clearLayerCallback = action;
+    public void SetupRemoveLayerCallback(Action<int> action) => removeLayerCallback = action;
+    public void SetupToggleLayerVisibilityCallback(Action<int> action) => toggleLayerVisibilityCallback = action;
+
+    public void GameStartup()
     {
+        // Init Button
         var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
         var height = (int)availableSpace.Height;
+        button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", () => AddLayer("New Layer"));
 
-        button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", AddLayer);
-    }
+        // Load Gear Icons
+        Image image = Raylib.LoadImage("Assets/gear_icon.png");
+        Raylib.ImageResize(ref image, 28, 28);
+        gearIcon = Raylib.LoadTextureFromImage(image);
+        Raylib.UnloadImage(image);
 
-    public void GameStartup()
-    {
-        layers.Add("background");
-        layers.Add("test");
+        // Load Eye Icons
+        Image imageEye = Raylib.LoadImage("Assets/eye.png");
+        Raylib.ImageResize(ref imageEye, 28, 28);
+        eyeIcon = Raylib.LoadTextureFromImage(imageEye);
+        Raylib.UnloadImage(imageEye);
 
-        float centerX = PANEL_X + PANEL_WIDTH / 2;
-        float centerY = PANEL_Y + PANEL_HEIGHT / 2;
+        // Load Visible Icons
+        Image imageVisible = Raylib.LoadImage("Assets/visible.png");
+        Raylib.ImageResize(ref imageVisible, 28, 28);
+        visibleIcon = Raylib.LoadTextureFromImage(imageVisible);
+        Raylib.UnloadImage(imageVisible);
 
-        camera = new Camera2D
-        {
-            Target = new Vector2(centerX, centerY),
-            Offset = new Vector2(PANEL_X + PANEL_WIDTH / 2, PANEL_Y + PANEL_HEIGHT / 2),
-            Rotation = 0.0f,
-            Zoom = 1.0f,
-        };
-
-        UpdateLayerReacts();
+        // Init Layers
+        AddLayer("Background", true);
     }
 
     public void HandleInput()
     {
-        button.Update();
+        button?.Update();
+
+        for (int i = 0; i < layersPanels.Count; i++)
+        {
+            LayerPanel? layerPanel = layersPanels[i];
+            layerPanel.Update();
+        }
 
         Vector2 mousePos = Raylib.GetMousePosition();
 
         // Init Drag Layer with Delay
         if (Raylib.IsMouseButtonPressed(MouseButton.Left))
         {
-            for (int i = 0; i < layersRectangles.Count; i++)
+            for (int i = 0; i < layersPanels.Count; i++)
             {
-                if (Raylib.CheckCollisionPointRec(mousePos, layersRectangles[i]))
+                if (Raylib.CheckCollisionPointRec(mousePos, layersPanels[i].Rect))
                 {
                     draggingLayerIndex = i;
-                    dragOffsetY = mousePos.Y - layersRectangles[i].Y;
+                    dragOffsetY = mousePos.Y - layersPanels[i].Rect.Y;
                     dragStartTime = (float)Raylib.GetTime();
                     isDragging = false;
                     break;
@@ -88,27 +107,27 @@ public class Layers
         if (isDragging && draggingLayerIndex.HasValue)
         {
             int index = draggingLayerIndex.Value;
-            var draggedRect = layersRectangles[index];
+            var draggedRect = layersPanels[index].Rect;
             draggedRect.Y = mousePos.Y - dragOffsetY;
-            layersRectangles[index] = draggedRect;
+            layersPanels[index].Rect = draggedRect;
 
             // Swap layers
-            for (int i = 0; i < layersRectangles.Count; i++)
+            for (int i = 0; i < layersPanels.Count; i++)
             {
                 if (i != index)
                 {
-                    float halfHeight = layersRectangles[i].Height / 2;
-                    float centerY = layersRectangles[i].Y + halfHeight;
+                    float halfHeight = layersPanels[i].Rect.Height / 2;
+                    float centerY = layersPanels[i].Rect.Y + halfHeight;
 
-                    if ((index > i && layersRectangles[index].Y < centerY) ||
-                        (index < i && layersRectangles[index].Y + layersRectangles[index].Height > centerY))
+                    if ((index > i && layersPanels[index].Rect.Y < centerY) ||
+                        (index < i && layersPanels[index].Rect.Y + layersPanels[index].Rect.Height > centerY))
                     {
                         if (activeLayer == i)
                             activeLayer = index;
                         else if (activeLayer == index)
                             activeLayer = i;
 
-                        (layers[index], layers[i]) = (layers[i], layers[index]);
+                        (layersPanels[index].Index, layersPanels[i].Index) = (i, index);
                         UpdateLayerReacts();
                         draggingLayerIndex = i;
                         break;
@@ -122,10 +141,12 @@ public class Layers
             // Set active if only click
             if (!isDragging && draggingLayerIndex.HasValue)
             {
-                for (int i = 0; i < layersRectangles.Count; i++)
+                for (int i = 0; i < layersPanels.Count; i++)
                 {
-                    if (Raylib.CheckCollisionPointRec(mousePos, layersRectangles[i]))
+                    if (Raylib.CheckCollisionPointRec(mousePos, layersPanels[i].Rect))
                     {
+                        layersPanels[activeLayer].ToggleActive();
+                        layersPanels[i].ToggleActive();
                         activeLayer = i;
                         break;
                     }
@@ -143,46 +164,76 @@ public class Layers
 
     public void GameRender()
     {
-        Raylib.BeginMode2D(camera);
-
         Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
 
-        for (var i = 0; i < layers.Count; i++)
-        {
-            var layerRectangle = layersRectangles[i];
-            var text = layers[i];
+        foreach (var layerPanel in layersPanels)
+            layerPanel.Draw();
 
-            var color = i == activeLayer ? Color.LightGray : Color.DarkGray;
-            Raylib.DrawRectangleRec(layerRectangle, color);
-            Raylib.DrawRectangleLinesEx(layerRectangle, 1, Color.LightGray);
-
-            // Centered text
-            int textX = (int)layerRectangle.X + 40;
-            int textY = (int)(layerRectangle.Y + (layerRectangle.Height / 2) - 8);
-            Raylib.DrawText(text, textX, textY, 16, Color.White);
-        }
-
-        button.Draw();
-
-        Raylib.EndMode2D();
+        button?.Draw();
     }
 
     private void UpdateLayerReacts()
     {
-        layersRectangles.Clear();
-
         var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
 
-        for (var i = 0; i < layers.Count; i++)
-            layersRectangles.Add(new Rectangle(startingX + 20, startingY + (i * 35) + 20, width - 40, 32));
+        layersPanels = [.. layersPanels.OrderBy(c => c.Index)];
+
+        for (var i = 0; i < layersPanels.Count; i++)
+        {
+            layersPanels[i].Rect = new Rectangle(startingX + 20, startingY + (i * 35) + 20, width - 40, 32);
+            layersPanels[i].GameStartup();
+        }
     }
 
-    private void AddLayer()
+    private void AddLayer(string layerName, bool isActive = false)
     {
-        layers.Add("new layer");
+        var layerPanel = new LayerPanel(new Rectangle(), layerName, layersPanels.Count, LayerPanelAction, gearIcon, eyeIcon, visibleIcon);
+        if (isActive)
+            layerPanel.ToggleActive();
+        layersPanels.Add(layerPanel);
         UpdateLayerReacts();
+    }
+
+    private void LayerPanelAction(LayerPanelActionEnum actionType, int index)
+    {
+        var active = actionType switch
+        {
+            LayerPanelActionEnum.Remove => RemoveLayer(index),
+            LayerPanelActionEnum.Clear => ClearLayer(index),
+            LayerPanelActionEnum.Visible => ToggleLayerVisibility(index),
+            _ => 0
+        };
+
+        if (active == index) return;
+
+        activeLayer = active;
+        layersPanels[activeLayer].ToggleActive();
+    }
+
+    private int RemoveLayer(int index)
+    {
+        layersPanels.RemoveAt(index);
+        UpdateLayerReacts();
+
+        removeLayerCallback?.Invoke(index);
+
+        return 0;
+    }
+
+    private int ClearLayer(int index)
+    {
+        clearLayerCallback?.Invoke(index);
+
+        return index;
+    }
+
+    private int ToggleLayerVisibility(int index)
+    {
+        toggleLayerVisibilityCallback?.Invoke(index);
+
+        return index;
     }
 }
