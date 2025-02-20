@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace FabTilemapEditor;
 
-public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelActionEnum, int> onClick, Texture2D gearIcon)
+public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelActionEnum, int> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
 {
     public Rectangle Rect
     {
@@ -12,17 +12,19 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         {
             rectangle = value;
             gearIconRect = new Rectangle(rectangle.X + rectangle.Width - 32, rectangle.Y + 2, 28, 28);
+            visibleIconRect = new Rectangle(rectangle.X + 5, rectangle.Y + 2, 28, 28);
         }
     }
     public int Index { get => index; set => index = value; }
     public string Name { get => name; }
 
-
     private bool isActive = false;
+    private bool isVisible = true;
     private bool showMenu = false;
     private Rectangle menuRect;
     private List<TextButton> menuButtons = [];
     private Rectangle gearIconRect = new Rectangle(rectangle.X + rectangle.Width - 32, rectangle.Y + 2, 28, 28);
+    private Rectangle visibleIconRect = new Rectangle(rectangle.X + 5, rectangle.Y + 2, 28, 28);
 
     public void ToggleActive() => isActive = !isActive;
 
@@ -33,7 +35,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         // Init Gear Menu
         menuRect = new Rectangle(rectangle.X + rectangle.Width + 5, rectangle.Y - 30, new Vector2(84, 80));
         menuButtons.Add(new TextButton(menuRect.X + 2, menuRect.Y + 2, 80, 25, "Clear", ClearLayer, false));
-        menuButtons.Add(new TextButton(menuRect.X + 2, menuRect.Y + 27, 80, 25, "Rename", () => { }, false));
+        menuButtons.Add(new TextButton(menuRect.X + 2, menuRect.Y + 27, 80, 25, "Rename", ToggleVisibility, false));
         menuButtons.Add(new TextButton(menuRect.X + 2, menuRect.Y + 54, 80, 25, "Remove", RemoveLayer, false));
     }
 
@@ -50,6 +52,13 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
             // Open Gear Menu
             if (Raylib.CheckCollisionPointRec(mousePos, gearIconRect))
                 showMenu = !showMenu;
+
+            // Toggle Visibility
+            if (Raylib.CheckCollisionPointRec(mousePos, visibleIconRect))
+            {
+                ToggleVisibility();
+                isVisible = !isVisible;
+            }
         }
 
         // Update Gear Menu
@@ -71,6 +80,12 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
 
         // Draw Gear Icon
         Raylib.DrawTexture(gearIcon, (int)gearIconRect.X, (int)gearIconRect.Y, Color.DarkGray);
+
+        // Draw Visible Icon
+        if (isVisible)
+            Raylib.DrawTexture(eyeIcon, (int)visibleIconRect.X, (int)visibleIconRect.Y, Color.DarkGray);
+        else
+            Raylib.DrawTexture(visibleIcon, (int)visibleIconRect.X, (int)visibleIconRect.Y, Color.DarkGray);
 
         // Draw Menu
         if (showMenu)
@@ -94,11 +109,17 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     {
         onClick.Invoke(LayerPanelActionEnum.Clear, index);
     }
+
+    private void ToggleVisibility()
+    {
+        onClick.Invoke(LayerPanelActionEnum.Visible, index);
+    }
 }
 
 public enum LayerPanelActionEnum
 {
     Clear = 0,
     Remove,
+    Visible,
 }
 

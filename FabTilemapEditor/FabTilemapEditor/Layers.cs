@@ -12,6 +12,8 @@ public class Layers
     const int PANEL_HEIGHT = 380;
 
     private Texture2D gearIcon;
+    private Texture2D eyeIcon;
+    private Texture2D visibleIcon;
     private TextButton? button;
 
     // Layers fields
@@ -25,6 +27,15 @@ public class Layers
     private bool isDragging = false;
     private const float DRAG_DELAY = 0.20f;
 
+    // Tilemap Callbacks
+    Action<int>? clearLayerCallback;
+    Action<int>? removeLayerCallback;
+    Action<int>? toggleLayerVisibilityCallback;
+
+    public void SetupClearLayerCallback(Action<int> action) => clearLayerCallback = action;
+    public void SetupRemoveLayerCallback(Action<int> action) => removeLayerCallback = action;
+    public void SetupToggleLayerVisibilityCallback(Action<int> action) => toggleLayerVisibilityCallback = action;
+
     public void GameStartup()
     {
         // Init Button
@@ -35,11 +46,23 @@ public class Layers
         var height = (int)availableSpace.Height;
         button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", () => AddLayer("New Layer"));
 
-        // Load Icons
+        // Load Gear Icons
         Image image = Raylib.LoadImage("Assets/gear_icon.png");
         Raylib.ImageResize(ref image, 28, 28);
         gearIcon = Raylib.LoadTextureFromImage(image);
         Raylib.UnloadImage(image);
+
+        // Load Eye Icons
+        Image imageEye = Raylib.LoadImage("Assets/eye.png");
+        Raylib.ImageResize(ref imageEye, 28, 28);
+        eyeIcon = Raylib.LoadTextureFromImage(imageEye);
+        Raylib.UnloadImage(imageEye);
+
+        // Load Visible Icons
+        Image imageVisible = Raylib.LoadImage("Assets/visible.png");
+        Raylib.ImageResize(ref imageVisible, 28, 28);
+        visibleIcon = Raylib.LoadTextureFromImage(imageVisible);
+        Raylib.UnloadImage(imageVisible);
 
         // Init Layers
         AddLayer("Background", true);
@@ -167,7 +190,7 @@ public class Layers
 
     private void AddLayer(string layerName, bool isActive = false)
     {
-        var layerPanel = new LayerPanel(new Rectangle(), layerName, layersPanels.Count, LayerPanelAction, gearIcon);
+        var layerPanel = new LayerPanel(new Rectangle(), layerName, layersPanels.Count, LayerPanelAction, gearIcon, eyeIcon, visibleIcon);
         if (isActive)
             layerPanel.ToggleActive();
         layersPanels.Add(layerPanel);
@@ -180,6 +203,7 @@ public class Layers
         {
             LayerPanelActionEnum.Remove => RemoveLayer(index),
             LayerPanelActionEnum.Clear => ClearLayer(index),
+            LayerPanelActionEnum.Visible => ToggleLayerVisibility(index),
             _ => 0
         };
 
@@ -194,13 +218,21 @@ public class Layers
         layersPanels.RemoveAt(index);
         UpdateLayerReacts();
 
+        removeLayerCallback?.Invoke(index);
+
         return 0;
     }
 
-    //TODO: Implement Clear Layer
     private int ClearLayer(int index)
     {
-        Console.WriteLine($"Clear Layer: {index}");
+        clearLayerCallback?.Invoke(index);
+
+        return index;
+    }
+
+    private int ToggleLayerVisibility(int index)
+    {
+        toggleLayerVisibilityCallback?.Invoke(index);
 
         return index;
     }

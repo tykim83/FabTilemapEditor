@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace FabTilemapEditor;
 
-public class Tilemap(Tileset tileset)
+public class Tilemap(Tileset tileset, Layers layers)
 {
     const int PANEL_X = 600;
     const int PANEL_Y = 0;
@@ -40,6 +40,10 @@ public class Tilemap(Tileset tileset)
             Rotation = 0.0f,
             Zoom = finalZoom
         };
+
+        layers.SetupClearLayerCallback((index) => ClearLayer(index));
+        layers.SetupRemoveLayerCallback((index) => RemoveLayer(index));
+        layers.SetupToggleLayerVisibilityCallback((index) => ToggleLayerVisibility(index));
     }
 
     public void HandleInput()
@@ -139,5 +143,29 @@ public class Tilemap(Tileset tileset)
         Rectangle dest = new Rectangle(posX, posY, Constants.TileSize, Constants.TileSize);
 
         Raylib.DrawTexturePro(tileset.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
+    }
+
+    //TODO: Implement Clear Layer
+    private int ClearLayer(int index)
+    {
+        Console.WriteLine($"Clear Layer: {index}");
+
+        return index;
+    }
+
+    //TODO: Implement Remove Layer
+    private int RemoveLayer(int index)
+    {
+        Console.WriteLine($"Remove Layer: {index}");
+
+        return index;
+    }
+
+    //TODO: Implement Toggle Layer Visibility
+    private int ToggleLayerVisibility(int index)
+    {
+        Console.WriteLine($"Toggle Layer Visibility: {index}");
+
+        return index;
     }
 }
