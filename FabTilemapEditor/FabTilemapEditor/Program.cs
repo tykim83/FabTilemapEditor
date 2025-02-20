@@ -16,13 +16,13 @@ while (!Raylib.WindowShouldClose())
     Raylib.BeginDrawing();
     Raylib.ClearBackground(Color.White);
 
+    tilemap.HandleInput();
     tileset.HandleInput();
     layers.HandleInput();
-    tilemap.HandleInput();
 
+    tilemap.GameRender();
     tileset.GameRender();
     layers.GameRender();
-    tilemap.GameRender();
 
     Raylib.EndDrawing();
 }

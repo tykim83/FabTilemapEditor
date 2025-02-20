@@ -33,7 +33,7 @@ public class Layers
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
         var height = (int)availableSpace.Height;
-        button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", AddLayer);
+        button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", () => AddLayer("New Layer"));
 
         // Load Icons
         Image image = Raylib.LoadImage("Assets/gear_icon.png");
@@ -42,15 +42,18 @@ public class Layers
         Raylib.UnloadImage(image);
 
         // Init Layers
-        InitLayerRect();
+        AddLayer("Background", true);
     }
 
     public void HandleInput()
     {
         button?.Update();
 
-        foreach (var layerPanel in layersPanels)
+        for (int i = 0; i < layersPanels.Count; i++)
+        {
+            LayerPanel? layerPanel = layersPanels[i];
             layerPanel.Update();
+        }
 
         Vector2 mousePos = Raylib.GetMousePosition();
 
@@ -146,24 +149,6 @@ public class Layers
         button?.Draw();
     }
 
-    private void Test() => Console.WriteLine("Click");
-
-    private void InitLayerRect()
-    {
-        layersPanels.Clear();
-
-        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
-        var startingX = (int)availableSpace.X;
-        var startingY = (int)availableSpace.Y;
-        var width = (int)availableSpace.Width;
-
-        var rect = new Rectangle(startingX + 20, startingY + 20, width - 40, 32);
-        var layerPanel = new LayerPanel(rect, "Background", 0, Test, gearIcon);
-        layerPanel.ToggleActive();
-
-        layersPanels.Add(layerPanel);
-    }
-
     private void UpdateLayerReacts()
     {
         var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
@@ -176,13 +161,47 @@ public class Layers
         for (var i = 0; i < layersPanels.Count; i++)
         {
             layersPanels[i].Rect = new Rectangle(startingX + 20, startingY + (i * 35) + 20, width - 40, 32);
+            layersPanels[i].GameStartup();
         }
     }
 
-    private void AddLayer()
+    private void AddLayer(string layerName, bool isActive = false)
     {
-        var layerPanel = new LayerPanel(new Rectangle(), "new layer", layersPanels.Count, Test, gearIcon);
+        var layerPanel = new LayerPanel(new Rectangle(), layerName, layersPanels.Count, LayerPanelAction, gearIcon);
+        if (isActive)
+            layerPanel.ToggleActive();
         layersPanels.Add(layerPanel);
         UpdateLayerReacts();
+    }
+
+    private void LayerPanelAction(LayerPanelActionEnum actionType, int index)
+    {
+        var active = actionType switch
+        {
+            LayerPanelActionEnum.Remove => RemoveLayer(index),
+            LayerPanelActionEnum.Clear => ClearLayer(index),
+            _ => 0
+        };
+
+        if (active == index) return;
+
+        activeLayer = active;
+        layersPanels[activeLayer].ToggleActive();
+    }
+
+    private int RemoveLayer(int index)
+    {
+        layersPanels.RemoveAt(index);
+        UpdateLayerReacts();
+
+        return 0;
+    }
+
+    //TODO: Implement Clear Layer
+    private int ClearLayer(int index)
+    {
+        Console.WriteLine($"Clear Layer: {index}");
+
+        return index;
     }
 }
