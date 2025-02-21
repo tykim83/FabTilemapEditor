@@ -1,7 +1,8 @@
-﻿using Raylib_cs;
+﻿using FabTilemapEditor.Shared;
+using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Gui;
 
 public class TextButton(float x, float y, float width, float height, string text, Action onClick, bool isRounded = true)
 {
@@ -40,8 +41,8 @@ public class TextButton(float x, float y, float width, float height, string text
 
         // Centered text
         int textWidth = Raylib.MeasureText(text, 16);
-        int textX = (int)(Rect.X + (Rect.Width / 2) - (textWidth / 2));
-        int textY = (int)(Rect.Y + (Rect.Height / 2) - 8);
+        int textX = (int)(Rect.X + Rect.Width / 2 - textWidth / 2);
+        int textY = (int)(Rect.Y + Rect.Height / 2 - 8);
         Raylib.DrawText(text, textX, textY, 16, Color.White);
     }
 }

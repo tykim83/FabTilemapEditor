@@ -1,9 +1,11 @@
-﻿using Raylib_cs;
+﻿using FabTilemapEditor.Gui;
+using FabTilemapEditor.Shared;
+using Raylib_cs;
 using System.Numerics;
 
 namespace FabTilemapEditor;
 
-public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelActionEnum, int> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
+public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelActionEnum, int, string> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
 {
     public Rectangle Rect
     {
@@ -18,13 +20,18 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     public int Index { get => index; set => index = value; }
     public string Name { get => name; }
 
+    // Active
     private bool isActive = false;
-    private bool isVisible = true;
+    // GearMenu
     private bool showMenu = false;
     private Rectangle menuRect;
     private List<TextButton> menuButtons = [];
     private Rectangle gearIconRect = new Rectangle(rectangle.X + rectangle.Width - 32, rectangle.Y + 2, 28, 28);
+    // Visibility
+    private bool isVisible = true;
     private Rectangle visibleIconRect = new Rectangle(rectangle.X + 5, rectangle.Y + 2, 28, 28);
+    // TextInputModal
+    private TextInputModal? inputModal = null;
 
     public void ToggleActive() => isActive = !isActive;
 
@@ -35,7 +42,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         // Init Gear Menu
         menuRect = new Rectangle(rectangle.X + rectangle.Width + 5, rectangle.Y - 30, new Vector2(84, 80));
         menuButtons.Add(new TextButton(menuRect.X + 2, menuRect.Y + 2, 80, 25, "Clear", ClearLayer, false));
-        menuButtons.Add(new TextButton(menuRect.X + 2, menuRect.Y + 27, 80, 25, "Rename", ToggleVisibility, false));
+        menuButtons.Add(new TextButton(menuRect.X + 2, menuRect.Y + 27, 80, 25, "Rename", StartRemameLayer, false));
         menuButtons.Add(new TextButton(menuRect.X + 2, menuRect.Y + 54, 80, 25, "Remove", RemoveLayer, false));
     }
 
@@ -61,6 +68,9 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
             }
         }
 
+        // Update Text Input Modal
+        inputModal?.Update();
+
         // Update Gear Menu
         if (showMenu)
             foreach (var menuButton in menuButtons)
@@ -76,7 +86,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         // Centered text
         int textX = (int)Rect.X + 40;
         int textY = (int)(Rect.Y + (Rect.Height / 2) - 8);
-        Raylib.DrawText(Name, textX, textY, 16, Color.White);
+        Raylib.DrawText(name, textX, textY, 16, Color.White);
 
         // Draw Gear Icon
         Raylib.DrawTexture(gearIcon, (int)gearIconRect.X, (int)gearIconRect.Y, Color.DarkGray);
@@ -90,6 +100,9 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         // Draw Menu
         if (showMenu)
             DrawMenu();
+
+        // Draw Text Input Modal
+        inputModal?.Draw();
     }
 
     private void DrawMenu()
@@ -100,26 +113,37 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
             menuButton.Draw();
     }
 
+    private void StartRemameLayer()
+    {
+        showMenu = false;
+        inputModal = new TextInputModal(name, RemameLayer);
+    }
+
+    // Layers Callbacks
     private void RemoveLayer()
     {
-        onClick.Invoke(LayerPanelActionEnum.Remove, index);
+        showMenu = false;
+        onClick.Invoke(LayerPanelActionEnum.Remove, index, name);
     }
 
     private void ClearLayer()
     {
-        onClick.Invoke(LayerPanelActionEnum.Clear, index);
+        showMenu = false;
+        onClick.Invoke(LayerPanelActionEnum.Clear, index, name);
     }
 
     private void ToggleVisibility()
     {
-        onClick.Invoke(LayerPanelActionEnum.Visible, index);
+        onClick.Invoke(LayerPanelActionEnum.Visible, index, name);
+    }
+
+    private void RemameLayer(TextInputModalState state, string text)
+    {
+        inputModal = null;
+
+        if (state is TextInputModalState.Close) return;
+
+        name = text;
+        onClick.Invoke(LayerPanelActionEnum.Rename, index, name);
     }
 }
-
-public enum LayerPanelActionEnum
-{
-    Clear = 0,
-    Remove,
-    Visible,
-}
-
