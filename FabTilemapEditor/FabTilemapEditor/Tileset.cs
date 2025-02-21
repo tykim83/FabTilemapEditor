@@ -61,6 +61,10 @@ public class Tileset
 
     public void HandleInput()
     {
+        Vector2 mousePos = Raylib.GetMousePosition();
+        if (!Raylib.CheckCollisionPointRec(mousePos, new Rectangle(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT)))
+            return;
+
         float zoomSpeed = 0.1f;
         float wheel = Raylib.GetMouseWheelMove();
 
