@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace FabTilemapEditor;
 
-public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelActionEnum, int, string> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
+public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelState, int, string> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
 {
     public Rectangle Rect
     {
@@ -31,7 +31,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     private bool isVisible = true;
     private Rectangle visibleIconRect = new Rectangle(rectangle.X + 5, rectangle.Y + 2, 28, 28);
     // TextInputModal
-    private TextInputModal? inputModal = null;
+    public TextInputModal? InputModal { get; private set; } = null;
 
     public void ToggleActive() => isActive = !isActive;
 
@@ -69,7 +69,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         }
 
         // Update Text Input Modal
-        inputModal?.Update();
+        InputModal?.Update();
 
         // Update Gear Menu
         if (showMenu)
@@ -100,9 +100,6 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         // Draw Menu
         if (showMenu)
             DrawMenu();
-
-        // Draw Text Input Modal
-        inputModal?.Draw();
     }
 
     private void DrawMenu()
@@ -116,34 +113,34 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     private void StartRemameLayer()
     {
         showMenu = false;
-        inputModal = new TextInputModal(name, RemameLayer);
+        InputModal = new TextInputModal(name, RemameLayer);
     }
 
     // Layers Callbacks
     private void RemoveLayer()
     {
         showMenu = false;
-        onClick.Invoke(LayerPanelActionEnum.Remove, index, name);
+        onClick.Invoke(LayerPanelState.Remove, index, name);
     }
 
     private void ClearLayer()
     {
         showMenu = false;
-        onClick.Invoke(LayerPanelActionEnum.Clear, index, name);
+        onClick.Invoke(LayerPanelState.Clear, index, name);
     }
 
     private void ToggleVisibility()
     {
-        onClick.Invoke(LayerPanelActionEnum.Visible, index, name);
+        onClick.Invoke(LayerPanelState.Visible, index, name);
     }
 
     private void RemameLayer(TextInputModalState state, string text)
     {
-        inputModal = null;
+        InputModal = null;
 
         if (state is TextInputModalState.Close) return;
 
         name = text;
-        onClick.Invoke(LayerPanelActionEnum.Rename, index, name);
+        onClick.Invoke(LayerPanelState.Rename, index, name);
     }
 }

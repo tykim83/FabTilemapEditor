@@ -37,6 +37,23 @@ public class Layers
     Action<int>? toggleLayerVisibilityCallback;
     Action? notifyLayerSwapCallback;
 
+    // Modals
+    public List<TextInputModal> InputModals
+    {
+        get
+        {
+            var modals = new List<TextInputModal>();
+            foreach (var layer in layerPanels)
+            {
+                if (layer != null && layer.InputModal is not null)
+                {
+                    modals.Add(layer.InputModal);
+                }
+            }
+            return modals;
+        }
+    }
+
     public void SetupAddLayerCallback(Action<int, string> action) => addLayerCallback = action;
     public void SetupRenameLayerCallback(Action<int, string> action) => renameLayerCallback = action;
     public void SetupClearLayerCallback(Action<int> action) => clearLayerCallback = action;
@@ -87,6 +104,8 @@ public class Layers
         }
 
         Vector2 mousePos = Raylib.GetMousePosition();
+        if (!Raylib.CheckCollisionPointRec(mousePos, new Rectangle(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT)))
+            return;
 
         // Init Drag Layer with Delay
         if (Raylib.IsMouseButtonPressed(MouseButton.Left))
@@ -214,14 +233,14 @@ public class Layers
     }
 
     // LayerPanel Callback Handler
-    private void LayerPanelAction(LayerPanelActionEnum actionType, int index, string layerName)
+    private void LayerPanelAction(LayerPanelState actionType, int index, string layerName)
     {
         var active = actionType switch
         {
-            LayerPanelActionEnum.Remove => RemoveLayer(index),
-            LayerPanelActionEnum.Clear => ClearLayer(index),
-            LayerPanelActionEnum.Visible => ToggleLayerVisibility(index),
-            LayerPanelActionEnum.Rename => RenameLayer(index, layerName),
+            LayerPanelState.Remove => RemoveLayer(index),
+            LayerPanelState.Clear => ClearLayer(index),
+            LayerPanelState.Visible => ToggleLayerVisibility(index),
+            LayerPanelState.Rename => RenameLayer(index, layerName),
             _ => 0
         };
 
@@ -236,7 +255,7 @@ public class Layers
     {
         renameLayerCallback?.Invoke(index, layerName);
 
-        return 0;
+        return index;
     }
 
     private int RemoveLayer(int index)

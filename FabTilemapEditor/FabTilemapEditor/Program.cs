@@ -25,6 +25,11 @@ while (!Raylib.WindowShouldClose())
     tileset.GameRender();
     layers.GameRender();
 
+    // Draw Tilemap Modal
+    tilemap.InputModal?.Draw();
+    foreach (var modal in layers.InputModals)
+        modal.Draw();
+
     Raylib.EndDrawing();
 }
 

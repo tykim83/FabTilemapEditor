@@ -1,6 +1,6 @@
 ﻿namespace FabTilemapEditor.Shared;
 
-public enum LayerPanelActionEnum
+public enum LayerPanelState
 {
     Clear = 0,
     Remove,
@@ -9,6 +9,12 @@ public enum LayerPanelActionEnum
 }
 public enum TextInputModalState
 {
-    Close,
+    Close = 0,
     Submit
+}
+
+public enum TilemapMenuState
+{
+    EditTilesWidth = 0,
+    EditTilesHeight
 }
