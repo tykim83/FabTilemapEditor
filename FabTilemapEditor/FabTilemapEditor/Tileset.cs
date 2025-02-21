@@ -17,6 +17,8 @@ public class Tileset
     private Vector2? selectedTilePixelPos;
     private Camera2D camera;
 
+    private TextButton? addTilesetButton;
+
     public int? SelectedTile { get => selectedTile; }
     public Texture2D TilesetTexture { get => tilesetTexture; }
 
@@ -29,6 +31,10 @@ public class Tileset
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
         var height = (int)availableSpace.Height;
+
+        // Init Button 
+        addTilesetButton = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add TileSet", AddTileSet);
+        height -= 80;
 
         // Load tileset
         Image image = Raylib.LoadImage("./assets/Tileset_Grass.png");
@@ -57,6 +63,9 @@ public class Tileset
     {
         float zoomSpeed = 0.1f;
         float wheel = Raylib.GetMouseWheelMove();
+
+        // Update Button
+        addTilesetButton?.Update();
 
         // Zoom in/out with mouse wheel
         if (wheel != 0)
@@ -99,6 +108,9 @@ public class Tileset
         var width = (int)availableSpace.Width;
         var height = (int)availableSpace.Height;
 
+        // Draw Button
+        addTilesetButton?.Draw();
+
         Raylib.BeginScissorMode(startingX, startingY, width, height);
 
         Raylib.BeginMode2D(camera);
@@ -132,5 +144,10 @@ public class Tileset
         var isInside = worldMousePos.X >= 0 && worldMousePos.Y >= 0 && worldMousePos.X <= tilesetTexture.Width && worldMousePos.Y <= tilesetTexture.Height;
 
         return (isInside, worldMousePos);
+    }
+
+    private void AddTileSet()
+    {
+        Console.WriteLine("Add Tileset");
     }
 }
