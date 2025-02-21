@@ -1,6 +1,6 @@
 ﻿using Raylib_cs;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Shared;
 
 public static class Constants
 {

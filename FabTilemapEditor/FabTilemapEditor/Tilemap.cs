@@ -1,4 +1,6 @@
-﻿using Raylib_cs;
+﻿using FabTilemapEditor.Gui;
+using FabTilemapEditor.Shared;
+using Raylib_cs;
 using System.Numerics;
 
 namespace FabTilemapEditor;
@@ -21,7 +23,7 @@ public class Tilemap(Tileset tileset, Layers layers)
         Array.Fill(tilemap, -1);
 
         // Calculate available space
-        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
+        var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
@@ -41,9 +43,12 @@ public class Tilemap(Tileset tileset, Layers layers)
             Zoom = finalZoom
         };
 
-        layers.SetupClearLayerCallback((index) => ClearLayer(index));
-        layers.SetupRemoveLayerCallback((index) => RemoveLayer(index));
-        layers.SetupToggleLayerVisibilityCallback((index) => ToggleLayerVisibility(index));
+        layers.SetupAddLayerCallback(AddLayer);
+        layers.SetupClearLayerCallback(ClearLayer);
+        layers.SetupRemoveLayerCallback(RemoveLayer);
+        layers.SetupRenameLayerCallback(RenameLayer);
+        layers.SetupToggleLayerVisibilityCallback(ToggleLayerVisibility);
+        layers.SetupNotifyLayerSwapCallback(NotifyLayersSwap);
     }
 
     public void HandleInput()
@@ -51,7 +56,7 @@ public class Tilemap(Tileset tileset, Layers layers)
         // Try Select Tile on Click
         if (Raylib.IsMouseButtonDown(MouseButton.Left))
         {
-            var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
+            var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
             var startingX = (int)availableSpace.X;
             var startingY = (int)availableSpace.Y;
 
@@ -68,7 +73,7 @@ public class Tilemap(Tileset tileset, Layers layers)
 
     public void GameRender()
     {
-        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
+        var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
@@ -145,27 +150,40 @@ public class Tilemap(Tileset tileset, Layers layers)
         Raylib.DrawTexturePro(tileset.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
     }
 
+    // Layers Callback Handlers
+    //TODO: Implement Add Layer
+    private void AddLayer(int index, string layerName)
+    {
+        Console.WriteLine($"Add Layer: {index} - {layerName}");
+    }
+
     //TODO: Implement Clear Layer
-    private int ClearLayer(int index)
+    private void ClearLayer(int index)
     {
         Console.WriteLine($"Clear Layer: {index}");
-
-        return index;
     }
 
     //TODO: Implement Remove Layer
-    private int RemoveLayer(int index)
+    private void RemoveLayer(int index)
     {
         Console.WriteLine($"Remove Layer: {index}");
+    }
 
-        return index;
+    //TODO: Implement Rename Layer
+    private void RenameLayer(int index, string layerName)
+    {
+        Console.WriteLine($"Rename Layer: {index} - {layerName}");
     }
 
     //TODO: Implement Toggle Layer Visibility
-    private int ToggleLayerVisibility(int index)
+    private void ToggleLayerVisibility(int index)
     {
         Console.WriteLine($"Toggle Layer Visibility: {index}");
+    }
 
-        return index;
+    //TODO: Implement Notify Layer Swap
+    private void NotifyLayersSwap()
+    {
+        Console.WriteLine("Layers Swap");
     }
 }

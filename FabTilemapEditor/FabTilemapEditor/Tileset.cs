@@ -1,4 +1,6 @@
-﻿using Raylib_cs;
+﻿using FabTilemapEditor.Gui;
+using FabTilemapEditor.Shared;
+using Raylib_cs;
 using System.Numerics;
 
 namespace FabTilemapEditor;
@@ -21,7 +23,7 @@ public class Tileset
     public void GameStartup()
     {
         // Calculate available space
-        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tileset");
+        var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tileset");
 
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y;
@@ -90,7 +92,7 @@ public class Tileset
 
     public void GameRender()
     {
-        var availableSpace = Utilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tileset");
+        var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tileset");
 
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y;

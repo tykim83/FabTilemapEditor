@@ -1,18 +1,11 @@
-﻿using Raylib_cs;
+﻿using FabTilemapEditor.Shared;
+using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Gui;
 
-public static class Utilities
+public class GuiUtilities
 {
-    public static void DrawTile(Texture2D tileset, int pos_x, int pos_y, int texture_index_x, int texture_index_y)
-    {
-        var source = new Rectangle(texture_index_x * Constants.TileSize, texture_index_y * Constants.TileSize, Constants.TileSize, Constants.TileSize);
-        var dest = new Rectangle(pos_x, pos_y, Constants.TileSize, Constants.TileSize);
-        var origin = new Vector2(0, 0);
-        Raylib.DrawTexturePro(tileset, source, dest, origin, 0.0f, Color.White);
-    }
-
     public static Rectangle RenderSectionUI(int startingX, int startingY, int panelWidth, int panelHeight, string titleText)
     {
         int panelX = startingX + 10;
