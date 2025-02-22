@@ -37,27 +37,15 @@ public class Tilemap(Tileset tileset, Layers layers)
         // Init TilemaMenu
         menu = new TilemapMenu(startingX, startingY, tilemapWidth, tilemapHeight, UpdateTiles);
         menu.GameStartup();
-        height -= 50;
 
-        float zoomToFitWidth = width / (float)(tilemapWidth * Constants.TileSize);
-        float zoomToFitHeight = height / (float)(tilemapHeight * Constants.TileSize);
-        float finalZoom = Math.Min(zoomToFitWidth, zoomToFitHeight);
-        float centerX = startingX + (tilemapWidth * Constants.TileSize) / 2;
-        float centerY = startingY + (tilemapHeight * Constants.TileSize) / 2;
+        // Update Camera
+        UpdateCamera();
 
-        camera = new Camera2D
-        {
-            Target = new Vector2(centerX, centerY),
-            Offset = new Vector2(startingX + width / 2, startingY + height / 2),
-            Rotation = 0.0f,
-            Zoom = finalZoom
-        };
-
+        // Setup Callbacks
         layers.SetupAddLayerCallback(AddLayer);
         layers.SetupClearLayerCallback(ClearLayer);
         layers.SetupRemoveLayerCallback(RemoveLayer);
         layers.SetupNotifyLayerSwapCallback(NotifyLayersSwap);
-
         layers.SetupRenameLayerCallback(UpdateTilemapLayersMetadata);
         layers.SetupToggleLayerVisibilityCallback(UpdateTilemapLayersMetadata);
     }
@@ -95,8 +83,6 @@ public class Tilemap(Tileset tileset, Layers layers)
 
         Raylib.BeginMode2D(camera);
 
-        Color gridColor = Color.Gray;
-
         // Draw Tilemap Layers
         DrawTilemapLayers(startingX, startingY);
 
@@ -104,17 +90,43 @@ public class Tilemap(Tileset tileset, Layers layers)
         for (int i = 0; i <= tilemapWidth; i++)
         {
             int xPos = startingX + (i * Constants.TileSize);
-            Raylib.DrawLine(xPos, startingY, xPos, startingY + (tilemapHeight * Constants.TileSize), gridColor);
+            Raylib.DrawLine(xPos, startingY, xPos, startingY + (tilemapHeight * Constants.TileSize), Color.Gray);
         }
 
         // Draw horizontal lines
         for (int j = 0; j <= tilemapHeight; j++)
         {
             int yPos = startingY + (j * Constants.TileSize);
-            Raylib.DrawLine(startingX, yPos, startingX + (tilemapWidth * Constants.TileSize), yPos, gridColor);
+            Raylib.DrawLine(startingX, yPos, startingX + (tilemapWidth * Constants.TileSize), yPos, Color.Gray);
         }
 
         Raylib.EndMode2D();
+    }
+
+    private void UpdateCamera()
+    {
+        // Calculate available space
+        var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
+        var startingX = (int)availableSpace.X;
+        var startingY = (int)availableSpace.Y + 70;
+        var width = (int)availableSpace.Width;
+        var height = (int)availableSpace.Height - 70;
+
+        Raylib.DrawRectangleLines(startingX, startingY, width, height, Color.Red);
+
+        float zoomToFitWidth = width / (float)(tilemapWidth * Constants.TileSize);
+        float zoomToFitHeight = height / (float)(tilemapHeight * Constants.TileSize);
+        float finalZoom = Math.Min(zoomToFitWidth, zoomToFitHeight);
+        float centerX = startingX + (tilemapWidth * Constants.TileSize) / 2;
+        float centerY = startingY + (tilemapHeight * Constants.TileSize) / 2;
+
+        camera = new Camera2D
+        {
+            Target = new Vector2(centerX, centerY - 70),
+            Offset = new Vector2(startingX + width / 2, startingY + height / 2),
+            Rotation = 0.0f,
+            Zoom = finalZoom
+        };
     }
 
     private void DrawTilemapLayers(int startingX, int startingY)
@@ -155,6 +167,28 @@ public class Tilemap(Tileset tileset, Layers layers)
 
             tilemapLayers.Add(tilemapLayer);
         };
+    }
+
+    private void ResizeTilemap(int newWidth, int newHeight)
+    {
+        foreach (var tilemapLayer in tilemapLayers)
+        {
+            int[] newData = new int[newWidth * newHeight];
+            Array.Fill(newData, -1);
+
+            // Copy over existing tile data
+            for (int y = 0; y < Math.Min(tilemapHeight, newHeight); y++)
+            {
+                for (int x = 0; x < Math.Min(tilemapWidth, newWidth); x++)
+                {
+                    int oldIndex = y * tilemapWidth + x;
+                    int newIndex = y * newWidth + x;
+                    newData[newIndex] = tilemapLayer.Data[oldIndex];
+                }
+            }
+
+            tilemapLayer.Data = newData;
+        }
     }
 
     private void UpdateTilemapLayersMetadata(int index)
@@ -198,10 +232,19 @@ public class Tilemap(Tileset tileset, Layers layers)
     }
 
     // TilemapMenu Callback Handlers
-    //TODO: Implement change tiles widht and height
     private void UpdateTiles(TilemapMenuState state, int value)
     {
-        Console.WriteLine($"Edit Tilemap tiles width or height: {value}");
+        if (state is TilemapMenuState.EditTilesWidth)
+        {
+            ResizeTilemap(value, tilemapHeight);
+            tilemapWidth = value;
+        }
+        else if (state is TilemapMenuState.EditTilesHeight)
+        {
+            ResizeTilemap(tilemapWidth, value);
+            tilemapHeight = value;
+        }
+        UpdateCamera();
     }
 
     // Layers Callback Handlers
