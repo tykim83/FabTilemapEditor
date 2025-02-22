@@ -1,22 +1,28 @@
 ﻿using FabTilemapEditor.Gui;
+using FabTilemapEditor.Layer;
 using FabTilemapEditor.Shared;
+using FabTilemapEditor.Tileset;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Tilemap;
 
-public class Tilemap(Tileset tileset, Layers layers)
+public class Tilemap(Tilesets tilesets, Layers layers)
 {
     private const int PANEL_X = 600;
     private const int PANEL_Y = 0;
     private const int PANEL_WIDTH = 1320;
     private const int PANEL_HEIGHT = 1080;
 
-    private int tilemapWidth = 16;
-    private int tilemapHeight = 10;
-
     private Camera2D camera;
     private List<TilemapLayer> tilemapLayers = [];
+    private readonly Canvas canvas = new()
+    {
+        Width = 16 * Constants.TileSize,
+        Height = 10 * Constants.TileSize,
+        TilesWidth = 16,
+        TilesHeight = 10
+    };
 
     private TilemapMenu? menu;
 
@@ -35,7 +41,7 @@ public class Tilemap(Tileset tileset, Layers layers)
         var height = (int)availableSpace.Height;
 
         // Init TilemaMenu
-        menu = new TilemapMenu(startingX, startingY, tilemapWidth, tilemapHeight, UpdateTiles);
+        menu = new TilemapMenu(startingX, startingY, canvas.TilesWidth, canvas.TilesHeight, UpdateTiles);
         menu.GameStartup();
 
         // Update Camera
@@ -50,9 +56,9 @@ public class Tilemap(Tileset tileset, Layers layers)
         layers.SetupToggleLayerVisibilityCallback(UpdateTilemapLayersMetadata);
     }
 
-    public void HandleInput()
+    public void Update()
     {
-        menu?.HandleInput();
+        menu?.Update();
 
         // Add Tile to Tilemap
         if (Raylib.IsMouseButtonDown(MouseButton.Left))
@@ -62,13 +68,13 @@ public class Tilemap(Tileset tileset, Layers layers)
             var startingY = (int)availableSpace.Y;
 
             (var isInside, var worldMousePos) = IsMouseInsideTileset(availableSpace);
-            if (isInside && tileset.SelectedTile is not null)
+            if (isInside && tilesets.SelectedTile is not null)
             {
                 int tileX = (int)((worldMousePos.X - startingX) / Constants.TileSize);
                 int tileY = (int)((worldMousePos.Y - startingY) / Constants.TileSize);
 
                 var index = layers.ActiveLayer;
-                tilemapLayers[index].Data[TilemapIndex(tileX, tileY)] = tileset.SelectedTile.Value;
+                tilemapLayers[index].Data[TilemapIndex(tileX, tileY)] = tilesets.SelectedTile.Value;
             }
         }
     }
@@ -87,17 +93,17 @@ public class Tilemap(Tileset tileset, Layers layers)
         DrawTilemapLayers(startingX, startingY);
 
         // Draw vertical lines
-        for (int i = 0; i <= tilemapWidth; i++)
+        for (int i = 0; i <= canvas.TilesWidth; i++)
         {
-            int xPos = startingX + (i * Constants.TileSize);
-            Raylib.DrawLine(xPos, startingY, xPos, startingY + (tilemapHeight * Constants.TileSize), Color.Gray);
+            int xPos = startingX + i * Constants.TileSize;
+            Raylib.DrawLine(xPos, startingY, xPos, startingY + canvas.TilesHeight * Constants.TileSize, Color.Gray);
         }
 
         // Draw horizontal lines
-        for (int j = 0; j <= tilemapHeight; j++)
+        for (int j = 0; j <= canvas.TilesHeight; j++)
         {
-            int yPos = startingY + (j * Constants.TileSize);
-            Raylib.DrawLine(startingX, yPos, startingX + (tilemapWidth * Constants.TileSize), yPos, Color.Gray);
+            int yPos = startingY + j * Constants.TileSize;
+            Raylib.DrawLine(startingX, yPos, startingX + canvas.TilesWidth * Constants.TileSize, yPos, Color.Gray);
         }
 
         Raylib.EndMode2D();
@@ -105,7 +111,6 @@ public class Tilemap(Tileset tileset, Layers layers)
 
     private void UpdateCamera()
     {
-        // Calculate available space
         var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y + 70;
@@ -114,11 +119,11 @@ public class Tilemap(Tileset tileset, Layers layers)
 
         Raylib.DrawRectangleLines(startingX, startingY, width, height, Color.Red);
 
-        float zoomToFitWidth = width / (float)(tilemapWidth * Constants.TileSize);
-        float zoomToFitHeight = height / (float)(tilemapHeight * Constants.TileSize);
+        float zoomToFitWidth = width / (float)(canvas.TilesWidth * Constants.TileSize);
+        float zoomToFitHeight = height / (float)(canvas.TilesHeight * Constants.TileSize);
         float finalZoom = Math.Min(zoomToFitWidth, zoomToFitHeight);
-        float centerX = startingX + (tilemapWidth * Constants.TileSize) / 2;
-        float centerY = startingY + (tilemapHeight * Constants.TileSize) / 2;
+        float centerX = startingX + canvas.TilesWidth * Constants.TileSize / 2;
+        float centerY = startingY + canvas.TilesHeight * Constants.TileSize / 2;
 
         camera = new Camera2D
         {
@@ -140,8 +145,8 @@ public class Tilemap(Tileset tileset, Layers layers)
                 int tileID = layer.Data[i];
                 if (tileID != -1)
                 {
-                    int tileX = i % tilemapWidth;
-                    int tileY = i / tilemapWidth;
+                    int tileX = i % canvas.TilesWidth;
+                    int tileY = i / canvas.TilesWidth;
 
                     int drawX = startingX + tileX * Constants.TileSize;
                     int drawY = startingY + tileY * Constants.TileSize;
@@ -158,7 +163,7 @@ public class Tilemap(Tileset tileset, Layers layers)
         {
             var tilemapLayer = new TilemapLayer()
             {
-                Data = new int[tilemapWidth * tilemapHeight],
+                Data = new int[canvas.TilesWidth * canvas.TilesHeight],
                 IsVisible = true,
                 Name = layer.Name,
             };
@@ -177,11 +182,11 @@ public class Tilemap(Tileset tileset, Layers layers)
             Array.Fill(newData, -1);
 
             // Copy over existing tile data
-            for (int y = 0; y < Math.Min(tilemapHeight, newHeight); y++)
+            for (int y = 0; y < Math.Min(canvas.TilesHeight, newHeight); y++)
             {
-                for (int x = 0; x < Math.Min(tilemapWidth, newWidth); x++)
+                for (int x = 0; x < Math.Min(canvas.TilesWidth, newWidth); x++)
                 {
-                    int oldIndex = y * tilemapWidth + x;
+                    int oldIndex = y * canvas.TilesWidth + x;
                     int newIndex = y * newWidth + x;
                     newData[newIndex] = tilemapLayer.Data[oldIndex];
                 }
@@ -210,17 +215,17 @@ public class Tilemap(Tileset tileset, Layers layers)
 
         var isInside = worldMousePos.X >= startingX
             && worldMousePos.Y >= startingY
-            && worldMousePos.X <= startingX + (tilemapWidth * Constants.TileSize)
-            && worldMousePos.Y <= startingY + (tilemapHeight * Constants.TileSize);
+            && worldMousePos.X <= startingX + canvas.TilesWidth * Constants.TileSize
+            && worldMousePos.Y <= startingY + canvas.TilesHeight * Constants.TileSize;
 
         return (isInside, worldMousePos);
     }
 
-    private int TilemapIndex(int x, int y) => y * tilemapWidth + x;
+    private int TilemapIndex(int x, int y) => y * canvas.TilesWidth + x;
 
     private void DrawTile(int tileID, int posX, int posY)
     {
-        int tilesPerRow = tileset.TilesetTexture.Width / Constants.TileSize;
+        int tilesPerRow = tilesets.TilesetTexture.Width / Constants.TileSize;
 
         int tileX = tileID % tilesPerRow;
         int tileY = tileID / tilesPerRow;
@@ -228,7 +233,7 @@ public class Tilemap(Tileset tileset, Layers layers)
         Rectangle source = new Rectangle(tileX * Constants.TileSize, tileY * Constants.TileSize, Constants.TileSize, Constants.TileSize);
         Rectangle dest = new Rectangle(posX, posY, Constants.TileSize, Constants.TileSize);
 
-        Raylib.DrawTexturePro(tileset.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
+        Raylib.DrawTexturePro(tilesets.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
     }
 
     // TilemapMenu Callback Handlers
@@ -236,13 +241,13 @@ public class Tilemap(Tileset tileset, Layers layers)
     {
         if (state is TilemapMenuState.EditTilesWidth)
         {
-            ResizeTilemap(value, tilemapHeight);
-            tilemapWidth = value;
+            ResizeTilemap(value, canvas.TilesHeight);
+            canvas.TilesWidth = value;
         }
         else if (state is TilemapMenuState.EditTilesHeight)
         {
-            ResizeTilemap(tilemapWidth, value);
-            tilemapHeight = value;
+            ResizeTilemap(canvas.TilesWidth, value);
+            canvas.TilesHeight = value;
         }
         UpdateCamera();
     }
@@ -252,7 +257,7 @@ public class Tilemap(Tileset tileset, Layers layers)
     {
         var tilemapLayer = new TilemapLayer()
         {
-            Data = new int[tilemapWidth * tilemapHeight],
+            Data = new int[canvas.TilesWidth * canvas.TilesHeight],
             IsVisible = true,
             Name = layers.LayerPanels[index].Name,
         };
@@ -284,12 +289,4 @@ public class Tilemap(Tileset tileset, Layers layers)
         tilemapLayers.Clear();
         tilemapLayers = tempTilemapLayers;
     }
-}
-
-public class TilemapLayer
-{
-    public string Name { get; set; } = string.Empty;
-    public string Tileset { get; set; } = string.Empty;
-    public bool IsVisible { get; set; }
-    public int[] Data { get; set; } = [];
 }

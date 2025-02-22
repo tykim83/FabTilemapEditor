@@ -3,10 +3,21 @@ using FabTilemapEditor.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Layer;
 
 public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelState, int> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
 {
+    // Active
+    private bool isActive = false;
+    // GearMenu
+    private bool showMenu = false;
+    private Rectangle menuRect;
+    private List<TextButton> menuButtons = [];
+    private Rectangle gearIconRect = new Rectangle(rectangle.X + rectangle.Width - 32, rectangle.Y + 2, 28, 28);
+    // Visibility
+    private bool isVisible = true;
+    private Rectangle visibleIconRect = new Rectangle(rectangle.X + 5, rectangle.Y + 2, 28, 28);
+
     public Rectangle Rect
     {
         get => rectangle;
@@ -20,21 +31,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     public int Index { get => index; set => index = value; }
     public string Name { get => name; }
     public bool IsVisible { get => isVisible; }
-
-    // Active
-    private bool isActive = false;
-    // GearMenu
-    private bool showMenu = false;
-    private Rectangle menuRect;
-    private List<TextButton> menuButtons = [];
-    private Rectangle gearIconRect = new Rectangle(rectangle.X + rectangle.Width - 32, rectangle.Y + 2, 28, 28);
-    // Visibility
-    private bool isVisible = true;
-    private Rectangle visibleIconRect = new Rectangle(rectangle.X + 5, rectangle.Y + 2, 28, 28);
-    // TextInputModal
     public TextInputModal? InputModal { get; private set; } = null;
-
-    public void ToggleActive() => isActive = !isActive;
 
     public void GameStartup()
     {
@@ -86,7 +83,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
 
         // Centered text
         int textX = (int)Rect.X + 40;
-        int textY = (int)(Rect.Y + (Rect.Height / 2) - 8);
+        int textY = (int)(Rect.Y + Rect.Height / 2 - 8);
         Raylib.DrawText(name, textX, textY, 16, Color.White);
 
         // Draw Gear Icon
@@ -102,6 +99,8 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         if (showMenu)
             DrawMenu();
     }
+
+    public void ToggleActive() => isActive = !isActive;
 
     private void DrawMenu()
     {

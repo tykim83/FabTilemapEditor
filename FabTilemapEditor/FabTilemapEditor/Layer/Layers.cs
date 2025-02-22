@@ -3,9 +3,8 @@ using FabTilemapEditor.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Layer;
 
-//TODO: Need to unload the Texture2D
 public class Layers
 {
     const int PANEL_X = 0;
@@ -17,10 +16,6 @@ public class Layers
     private Texture2D eyeIcon;
     private Texture2D visibleIcon;
     private TextButton? button;
-
-    // Layers Properties
-    public int ActiveLayer { get; private set; } = 0;
-    public List<LayerPanel> LayerPanels { get; private set; } = [];
 
     // Drag fields
     private int? draggingLayerIndex = null;
@@ -37,7 +32,9 @@ public class Layers
     Action<int>? toggleLayerVisibilityCallback;
     Action? notifyLayerSwapCallback;
 
-    // Modals
+    // Layers Properties
+    public int ActiveLayer { get; private set; } = 0;
+    public List<LayerPanel> LayerPanels { get; private set; } = [];
     public List<TextInputModal> InputModals
     {
         get
@@ -93,7 +90,7 @@ public class Layers
         AddLayer("Background", true);
     }
 
-    public void HandleInput()
+    public void Update()
     {
         button?.Update();
 
@@ -146,8 +143,8 @@ public class Layers
                     float halfHeight = LayerPanels[i].Rect.Height / 2;
                     float centerY = LayerPanels[i].Rect.Y + halfHeight;
 
-                    if ((index < i && LayerPanels[index].Rect.Y < centerY) ||
-                        (index > i && LayerPanels[index].Rect.Y + LayerPanels[index].Rect.Height > centerY))
+                    if (index < i && LayerPanels[index].Rect.Y < centerY ||
+                        index > i && LayerPanels[index].Rect.Y + LayerPanels[index].Rect.Height > centerY)
                     {
                         if (ActiveLayer == i)
                             ActiveLayer = index;
@@ -214,8 +211,8 @@ public class Layers
 
         for (var i = 0; i < LayerPanels.Count; i++)
         {
-            var drawIndex = (LayerPanels.Count - 1) - i;
-            LayerPanels[i].Rect = new Rectangle(startingX + 20, startingY + (drawIndex * 35) + 20, width - 40, 32);
+            var drawIndex = LayerPanels.Count - 1 - i;
+            LayerPanels[i].Rect = new Rectangle(startingX + 20, startingY + drawIndex * 35 + 20, width - 40, 32);
             LayerPanels[i].GameStartup();
         }
     }

@@ -1,8 +1,7 @@
 ﻿using FabTilemapEditor.Gui;
 using FabTilemapEditor.Shared;
-using Raylib_cs;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Tilemap;
 
 public class TilemapMenu(int x, int y, int tilesWidht, int tilesHeight, Action<TilemapMenuState, int> action)
 {
@@ -11,9 +10,9 @@ public class TilemapMenu(int x, int y, int tilesWidht, int tilesHeight, Action<T
     private TextButton? tilesWidthButton;
     private TextButton? tilesHeightButton;
 
-    // TextInputModal
-    public TextInputModal? InputModal { get; private set; } = null;
     private TilemapMenuState? menuState = null;
+
+    public TextInputModal? InputModal { get; private set; } = null;
 
     public void GameStartup()
     {
@@ -23,7 +22,7 @@ public class TilemapMenu(int x, int y, int tilesWidht, int tilesHeight, Action<T
         tilesHeightButton = new TextButton(x + 480, y + 10, 100, 30, "Edit Height", () => { menuState = TilemapMenuState.EditTilesHeight; }, false);
     }
 
-    public void HandleInput()
+    public void Update()
     {
         tilesHeightButton?.Update();
         tilesWidthButton?.Update();
@@ -33,12 +32,6 @@ public class TilemapMenu(int x, int y, int tilesWidht, int tilesHeight, Action<T
         {
             var value = menuState.Value is TilemapMenuState.EditTilesWidth ? tilesWidht : tilesHeight;
             InputModal = new TextInputModal(value.ToString(), RemameLayer);
-        }
-
-        // Try Select Tile on Click
-        if (Raylib.IsMouseButtonDown(MouseButton.Left))
-        {
-
         }
     }
 

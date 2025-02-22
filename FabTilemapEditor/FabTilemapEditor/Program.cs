@@ -1,14 +1,16 @@
-﻿using FabTilemapEditor;
+﻿using FabTilemapEditor.Layer;
 using FabTilemapEditor.Shared;
+using FabTilemapEditor.Tilemap;
+using FabTilemapEditor.Tileset;
 using Raylib_cs;
 
 
 Raylib.InitWindow(Constants.ScreenWidth, Constants.ScreenHeight, "Hello World");
-var tileset = new Tileset();
+var tilesets = new Tilesets();
 var layers = new Layers();
-var tilemap = new Tilemap(tileset, layers);
+var tilemap = new Tilemap(tilesets, layers);
 
-tileset.GameStartup();
+tilesets.GameStartup();
 layers.GameStartup();
 tilemap.GameStartup();
 
@@ -17,12 +19,12 @@ while (!Raylib.WindowShouldClose())
     Raylib.BeginDrawing();
     Raylib.ClearBackground(Color.White);
 
-    tilemap.HandleInput();
-    tileset.HandleInput();
-    layers.HandleInput();
+    tilemap.Update();
+    tilesets.Update();
+    layers.Update();
 
     tilemap.GameRender();
-    tileset.GameRender();
+    tilesets.GameRender();
     layers.GameRender();
 
     // Draw Tilemap Modal
