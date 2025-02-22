@@ -18,9 +18,9 @@ public class Layers
     private Texture2D visibleIcon;
     private TextButton? button;
 
-    // Layers fields
-    private int activeLayer = 0;
-    private List<LayerPanel> layerPanels = [];
+    // Layers Properties
+    public int ActiveLayer { get; private set; } = 0;
+    public List<LayerPanel> LayerPanels { get; private set; } = [];
 
     // Drag fields
     private int? draggingLayerIndex = null;
@@ -30,8 +30,8 @@ public class Layers
     private const float DRAG_DELAY = 0.20f;
 
     // Setup Tilemap Callbacks
-    Action<int, string>? addLayerCallback;
-    Action<int, string>? renameLayerCallback;
+    Action<int>? addLayerCallback;
+    Action<int>? renameLayerCallback;
     Action<int>? clearLayerCallback;
     Action<int>? removeLayerCallback;
     Action<int>? toggleLayerVisibilityCallback;
@@ -43,7 +43,7 @@ public class Layers
         get
         {
             var modals = new List<TextInputModal>();
-            foreach (var layer in layerPanels)
+            foreach (var layer in LayerPanels)
             {
                 if (layer != null && layer.InputModal is not null)
                 {
@@ -54,8 +54,8 @@ public class Layers
         }
     }
 
-    public void SetupAddLayerCallback(Action<int, string> action) => addLayerCallback = action;
-    public void SetupRenameLayerCallback(Action<int, string> action) => renameLayerCallback = action;
+    public void SetupAddLayerCallback(Action<int> action) => addLayerCallback = action;
+    public void SetupRenameLayerCallback(Action<int> action) => renameLayerCallback = action;
     public void SetupClearLayerCallback(Action<int> action) => clearLayerCallback = action;
     public void SetupRemoveLayerCallback(Action<int> action) => removeLayerCallback = action;
     public void SetupToggleLayerVisibilityCallback(Action<int> action) => toggleLayerVisibilityCallback = action;
@@ -97,9 +97,9 @@ public class Layers
     {
         button?.Update();
 
-        for (int i = 0; i < layerPanels.Count; i++)
+        for (int i = 0; i < LayerPanels.Count; i++)
         {
-            LayerPanel? layerPanel = layerPanels[i];
+            LayerPanel? layerPanel = LayerPanels[i];
             layerPanel.Update();
         }
 
@@ -110,12 +110,12 @@ public class Layers
         // Init Drag Layer with Delay
         if (Raylib.IsMouseButtonPressed(MouseButton.Left))
         {
-            for (int i = 0; i < layerPanels.Count; i++)
+            for (int i = 0; i < LayerPanels.Count; i++)
             {
-                if (Raylib.CheckCollisionPointRec(mousePos, layerPanels[i].Rect))
+                if (Raylib.CheckCollisionPointRec(mousePos, LayerPanels[i].Rect))
                 {
                     draggingLayerIndex = i;
-                    dragOffsetY = mousePos.Y - layerPanels[i].Rect.Y;
+                    dragOffsetY = mousePos.Y - LayerPanels[i].Rect.Y;
                     dragStartTime = (float)Raylib.GetTime();
                     isDragging = false;
                     break;
@@ -134,27 +134,27 @@ public class Layers
         if (isDragging && draggingLayerIndex.HasValue)
         {
             int index = draggingLayerIndex.Value;
-            var draggedRect = layerPanels[index].Rect;
+            var draggedRect = LayerPanels[index].Rect;
             draggedRect.Y = mousePos.Y - dragOffsetY;
-            layerPanels[index].Rect = draggedRect;
+            LayerPanels[index].Rect = draggedRect;
 
             // Swap layers
-            for (int i = 0; i < layerPanels.Count; i++)
+            for (int i = 0; i < LayerPanels.Count; i++)
             {
                 if (i != index)
                 {
-                    float halfHeight = layerPanels[i].Rect.Height / 2;
-                    float centerY = layerPanels[i].Rect.Y + halfHeight;
+                    float halfHeight = LayerPanels[i].Rect.Height / 2;
+                    float centerY = LayerPanels[i].Rect.Y + halfHeight;
 
-                    if ((index < i && layerPanels[index].Rect.Y < centerY) ||
-                        (index > i && layerPanels[index].Rect.Y + layerPanels[index].Rect.Height > centerY))
+                    if ((index < i && LayerPanels[index].Rect.Y < centerY) ||
+                        (index > i && LayerPanels[index].Rect.Y + LayerPanels[index].Rect.Height > centerY))
                     {
-                        if (activeLayer == i)
-                            activeLayer = index;
-                        else if (activeLayer == index)
-                            activeLayer = i;
+                        if (ActiveLayer == i)
+                            ActiveLayer = index;
+                        else if (ActiveLayer == index)
+                            ActiveLayer = i;
 
-                        (layerPanels[index].Index, layerPanels[i].Index) = (i, index);
+                        (LayerPanels[index].Index, LayerPanels[i].Index) = (i, index);
                         UpdateLayerReacts();
                         draggingLayerIndex = i;
                         break;
@@ -168,27 +168,28 @@ public class Layers
             // Set active if only click
             if (!isDragging && draggingLayerIndex.HasValue)
             {
-                for (int i = 0; i < layerPanels.Count; i++)
+                for (int i = 0; i < LayerPanels.Count; i++)
                 {
-                    if (Raylib.CheckCollisionPointRec(mousePos, layerPanels[i].Rect))
+                    if (Raylib.CheckCollisionPointRec(mousePos, LayerPanels[i].Rect))
                     {
-                        layerPanels[activeLayer].ToggleActive();
-                        layerPanels[i].ToggleActive();
-                        activeLayer = i;
+                        LayerPanels[ActiveLayer].ToggleActive();
+                        LayerPanels[i].ToggleActive();
+                        ActiveLayer = i;
                         break;
                     }
                 }
             }
 
-            // Tilemap Callbacks
-            if (isDragging && draggingLayerIndex.HasValue)
-                notifyLayerSwapCallback?.Invoke();
             // Release Drag Layer
             draggingLayerIndex = null;
             dragOffsetY = 0;
             isDragging = false;
 
             UpdateLayerReacts();
+
+            // Tilemap Callbacks
+            if (isDragging && draggingLayerIndex.HasValue)
+                notifyLayerSwapCallback?.Invoke();
         }
     }
 
@@ -196,7 +197,7 @@ public class Layers
     {
         GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Layers");
 
-        foreach (var layerPanel in layerPanels)
+        foreach (var layerPanel in LayerPanels)
             layerPanel.Draw();
 
         button?.Draw();
@@ -209,58 +210,58 @@ public class Layers
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
 
-        layerPanels = [.. layerPanels.OrderBy(c => c.Index)];
+        LayerPanels = [.. LayerPanels.OrderBy(c => c.Index)];
 
-        for (var i = 0; i < layerPanels.Count; i++)
+        for (var i = 0; i < LayerPanels.Count; i++)
         {
-            var drawIndex = (layerPanels.Count - 1) - i;
-            layerPanels[i].Rect = new Rectangle(startingX + 20, startingY + (drawIndex * 35) + 20, width - 40, 32);
-            layerPanels[i].GameStartup();
+            var drawIndex = (LayerPanels.Count - 1) - i;
+            LayerPanels[i].Rect = new Rectangle(startingX + 20, startingY + (drawIndex * 35) + 20, width - 40, 32);
+            LayerPanels[i].GameStartup();
         }
     }
 
     private void AddLayer(string layerName, bool isActive = false)
     {
-        var index = layerPanels.Count;
+        var index = LayerPanels.Count;
         var layerPanel = new LayerPanel(new Rectangle(), layerName, index, LayerPanelAction, gearIcon, eyeIcon, visibleIcon);
         if (isActive)
             layerPanel.ToggleActive();
-        layerPanels.Add(layerPanel);
+        LayerPanels.Add(layerPanel);
         UpdateLayerReacts();
 
         // Tilemap Callbacks
-        addLayerCallback?.Invoke(index, layerName);
+        addLayerCallback?.Invoke(index);
     }
 
     // LayerPanel Callback Handler
-    private void LayerPanelAction(LayerPanelState actionType, int index, string layerName)
+    private void LayerPanelAction(LayerPanelState actionType, int index)
     {
         var active = actionType switch
         {
             LayerPanelState.Remove => RemoveLayer(index),
             LayerPanelState.Clear => ClearLayer(index),
             LayerPanelState.Visible => ToggleLayerVisibility(index),
-            LayerPanelState.Rename => RenameLayer(index, layerName),
+            LayerPanelState.Rename => RenameLayer(index),
             _ => 0
         };
 
         if (active == index) return;
 
-        activeLayer = active;
-        layerPanels[activeLayer].ToggleActive();
+        ActiveLayer = active;
+        LayerPanels[ActiveLayer].ToggleActive();
     }
 
     // Tilemap Callbacks
-    private int RenameLayer(int index, string layerName)
+    private int RenameLayer(int index)
     {
-        renameLayerCallback?.Invoke(index, layerName);
+        renameLayerCallback?.Invoke(index);
 
         return index;
     }
 
     private int RemoveLayer(int index)
     {
-        layerPanels.RemoveAt(index);
+        LayerPanels.RemoveAt(index);
         UpdateLayerReacts();
 
         removeLayerCallback?.Invoke(index);

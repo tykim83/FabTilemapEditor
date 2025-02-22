@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace FabTilemapEditor;
 
-public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelState, int, string> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
+public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelState, int> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
 {
     public Rectangle Rect
     {
@@ -19,6 +19,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     }
     public int Index { get => index; set => index = value; }
     public string Name { get => name; }
+    public bool IsVisible { get => isVisible; }
 
     // Active
     private bool isActive = false;
@@ -63,8 +64,8 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
             // Toggle Visibility
             if (Raylib.CheckCollisionPointRec(mousePos, visibleIconRect))
             {
-                ToggleVisibility();
                 isVisible = !isVisible;
+                ToggleVisibility();
             }
         }
 
@@ -120,18 +121,18 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     private void RemoveLayer()
     {
         showMenu = false;
-        onClick.Invoke(LayerPanelState.Remove, index, name);
+        onClick.Invoke(LayerPanelState.Remove, index);
     }
 
     private void ClearLayer()
     {
         showMenu = false;
-        onClick.Invoke(LayerPanelState.Clear, index, name);
+        onClick.Invoke(LayerPanelState.Clear, index);
     }
 
     private void ToggleVisibility()
     {
-        onClick.Invoke(LayerPanelState.Visible, index, name);
+        onClick.Invoke(LayerPanelState.Visible, index);
     }
 
     private void RemameLayer(TextInputModalState state, string text)
@@ -141,6 +142,6 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         if (state is TextInputModalState.Close) return;
 
         name = text;
-        onClick.Invoke(LayerPanelState.Rename, index, name);
+        onClick.Invoke(LayerPanelState.Rename, index);
     }
 }

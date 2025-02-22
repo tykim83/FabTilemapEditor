@@ -16,7 +16,7 @@ public class Tilemap(Tileset tileset, Layers layers)
     private int tilemapHeight = 10;
 
     private Camera2D camera;
-    private int[] tilemap;
+    private List<TilemapLayer> tilemapLayers = [];
 
     private TilemapMenu? menu;
 
@@ -24,8 +24,8 @@ public class Tilemap(Tileset tileset, Layers layers)
 
     public void GameStartup()
     {
-        tilemap = new int[tilemapWidth * tilemapHeight];
-        Array.Fill(tilemap, -1);
+        // Init tilemaps
+        InitTilemapLayers();
 
         // Calculate available space
         var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
@@ -56,16 +56,17 @@ public class Tilemap(Tileset tileset, Layers layers)
         layers.SetupAddLayerCallback(AddLayer);
         layers.SetupClearLayerCallback(ClearLayer);
         layers.SetupRemoveLayerCallback(RemoveLayer);
-        layers.SetupRenameLayerCallback(RenameLayer);
-        layers.SetupToggleLayerVisibilityCallback(ToggleLayerVisibility);
         layers.SetupNotifyLayerSwapCallback(NotifyLayersSwap);
+
+        layers.SetupRenameLayerCallback(UpdateTilemapLayersMetadata);
+        layers.SetupToggleLayerVisibilityCallback(UpdateTilemapLayersMetadata);
     }
 
     public void HandleInput()
     {
         menu?.HandleInput();
 
-        // Try Select Tile on Click
+        // Add Tile to Tilemap
         if (Raylib.IsMouseButtonDown(MouseButton.Left))
         {
             var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
@@ -78,7 +79,8 @@ public class Tilemap(Tileset tileset, Layers layers)
                 int tileX = (int)((worldMousePos.X - startingX) / Constants.TileSize);
                 int tileY = (int)((worldMousePos.Y - startingY) / Constants.TileSize);
 
-                tilemap[TilemapIndex(tileX, tileY)] = tileset.SelectedTile.Value;
+                var index = layers.ActiveLayer;
+                tilemapLayers[index].Data[TilemapIndex(tileX, tileY)] = tileset.SelectedTile.Value;
             }
         }
     }
@@ -88,8 +90,6 @@ public class Tilemap(Tileset tileset, Layers layers)
         var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tilemap");
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y;
-        var width = (int)availableSpace.Width;
-        var height = (int)availableSpace.Height;
 
         menu?.GameRender();
 
@@ -97,21 +97,8 @@ public class Tilemap(Tileset tileset, Layers layers)
 
         Color gridColor = Color.Gray;
 
-        // Draw Tilemap
-        for (int i = 0; i < tilemap.Length; i++)
-        {
-            int tileID = tilemap[i];
-            if (tileID != -1)
-            {
-                int tileX = i % tilemapWidth;
-                int tileY = i / tilemapWidth;
-
-                int drawX = startingX + tileX * Constants.TileSize;
-                int drawY = startingY + tileY * Constants.TileSize;
-
-                DrawTile(tileID, drawX, drawY);
-            }
-        }
+        // Draw Tilemap Layers
+        DrawTilemapLayers(startingX, startingY);
 
         // Draw vertical lines
         for (int i = 0; i <= tilemapWidth; i++)
@@ -128,6 +115,55 @@ public class Tilemap(Tileset tileset, Layers layers)
         }
 
         Raylib.EndMode2D();
+    }
+
+    private void DrawTilemapLayers(int startingX, int startingY)
+    {
+        foreach (var layer in tilemapLayers)
+        {
+            if (!layer.IsVisible) continue;
+
+            for (int i = 0; i < layer.Data.Length; i++)
+            {
+                int tileID = layer.Data[i];
+                if (tileID != -1)
+                {
+                    int tileX = i % tilemapWidth;
+                    int tileY = i / tilemapWidth;
+
+                    int drawX = startingX + tileX * Constants.TileSize;
+                    int drawY = startingY + tileY * Constants.TileSize;
+
+                    DrawTile(tileID, drawX, drawY);
+                }
+            }
+        }
+    }
+
+    private void InitTilemapLayers()
+    {
+        foreach (var layer in layers.LayerPanels)
+        {
+            var tilemapLayer = new TilemapLayer()
+            {
+                Data = new int[tilemapWidth * tilemapHeight],
+                IsVisible = true,
+                Name = layer.Name,
+            };
+
+            Array.Fill(tilemapLayer.Data, -1);
+
+            tilemapLayers.Add(tilemapLayer);
+        };
+    }
+
+    private void UpdateTilemapLayersMetadata(int index)
+    {
+        var tilemapLayer = tilemapLayers[index];
+        var layer = layers.LayerPanels[index];
+
+        tilemapLayer.IsVisible = layer.IsVisible;
+        tilemapLayer.Name = layer.Name;
     }
 
     private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset(Rectangle availableSpace)
@@ -169,39 +205,49 @@ public class Tilemap(Tileset tileset, Layers layers)
     }
 
     // Layers Callback Handlers
-    //TODO: Implement Add Layer
-    private void AddLayer(int index, string layerName)
+    private void AddLayer(int index)
     {
-        Console.WriteLine($"Add Layer: {index} - {layerName}");
+        var tilemapLayer = new TilemapLayer()
+        {
+            Data = new int[tilemapWidth * tilemapHeight],
+            IsVisible = true,
+            Name = layers.LayerPanels[index].Name,
+        };
+
+        Array.Fill(tilemapLayer.Data, -1);
+
+        tilemapLayers.Add(tilemapLayer);
     }
 
-    //TODO: Implement Clear Layer
     private void ClearLayer(int index)
     {
-        Console.WriteLine($"Clear Layer: {index}");
+        Array.Fill(tilemapLayers[index].Data, -1);
     }
 
-    //TODO: Implement Remove Layer
     private void RemoveLayer(int index)
     {
-        Console.WriteLine($"Remove Layer: {index}");
-    }
-
-    //TODO: Implement Rename Layer
-    private void RenameLayer(int index, string layerName)
-    {
-        Console.WriteLine($"Rename Layer: {index} - {layerName}");
-    }
-
-    //TODO: Implement Toggle Layer Visibility
-    private void ToggleLayerVisibility(int index)
-    {
-        Console.WriteLine($"Toggle Layer Visibility: {index}");
+        tilemapLayers.RemoveAt(index);
     }
 
     //TODO: Implement Notify Layer Swap
     private void NotifyLayersSwap()
     {
-        Console.WriteLine("Layers Swap");
+        var tempTilemapLayers = new List<TilemapLayer>();
+
+        foreach (var layer in layers.LayerPanels)
+        {
+            var tilemapLayer = tempTilemapLayers.First(x => x.Name == layer.Name);
+            tempTilemapLayers.Add(tilemapLayer);
+        };
+
+        tilemapLayers = tempTilemapLayers;
     }
+}
+
+public class TilemapLayer
+{
+    public string Name { get; set; } = string.Empty;
+    public string Tileset { get; set; } = string.Empty;
+    public bool IsVisible { get; set; }
+    public int[] Data { get; set; } = [];
 }
