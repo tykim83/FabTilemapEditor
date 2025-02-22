@@ -180,16 +180,16 @@ public class Layers
                 }
             }
 
-            // Release Drag Layer
-            draggingLayerIndex = null;
-            dragOffsetY = 0;
-            isDragging = false;
-
             UpdateLayerReacts();
 
             // Tilemap Callbacks
             if (isDragging && draggingLayerIndex.HasValue)
                 notifyLayerSwapCallback?.Invoke();
+
+            // Release Drag Layer
+            draggingLayerIndex = null;
+            dragOffsetY = 0;
+            isDragging = false;
         }
     }
 

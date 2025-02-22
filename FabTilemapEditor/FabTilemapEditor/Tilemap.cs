@@ -229,17 +229,16 @@ public class Tilemap(Tileset tileset, Layers layers)
         tilemapLayers.RemoveAt(index);
     }
 
-    //TODO: Implement Notify Layer Swap
     private void NotifyLayersSwap()
     {
         var tempTilemapLayers = new List<TilemapLayer>();
 
         foreach (var layer in layers.LayerPanels)
         {
-            var tilemapLayer = tempTilemapLayers.First(x => x.Name == layer.Name);
+            var tilemapLayer = tilemapLayers.First(x => x.Name == layer.Name);
             tempTilemapLayers.Add(tilemapLayer);
         };
-
+        tilemapLayers.Clear();
         tilemapLayers = tempTilemapLayers;
     }
 }
