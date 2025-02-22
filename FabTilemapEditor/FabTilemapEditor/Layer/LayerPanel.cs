@@ -3,10 +3,21 @@ using FabTilemapEditor.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Layer;
 
-public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelState, int, string> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
+public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelState, int> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
 {
+    // Active
+    private bool isActive = false;
+    // GearMenu
+    private bool showMenu = false;
+    private Rectangle menuRect;
+    private List<TextButton> menuButtons = [];
+    private Rectangle gearIconRect = new Rectangle(rectangle.X + rectangle.Width - 32, rectangle.Y + 2, 28, 28);
+    // Visibility
+    private bool isVisible = true;
+    private Rectangle visibleIconRect = new Rectangle(rectangle.X + 5, rectangle.Y + 2, 28, 28);
+
     public Rectangle Rect
     {
         get => rectangle;
@@ -19,21 +30,8 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     }
     public int Index { get => index; set => index = value; }
     public string Name { get => name; }
-
-    // Active
-    private bool isActive = false;
-    // GearMenu
-    private bool showMenu = false;
-    private Rectangle menuRect;
-    private List<TextButton> menuButtons = [];
-    private Rectangle gearIconRect = new Rectangle(rectangle.X + rectangle.Width - 32, rectangle.Y + 2, 28, 28);
-    // Visibility
-    private bool isVisible = true;
-    private Rectangle visibleIconRect = new Rectangle(rectangle.X + 5, rectangle.Y + 2, 28, 28);
-    // TextInputModal
+    public bool IsVisible { get => isVisible; }
     public TextInputModal? InputModal { get; private set; } = null;
-
-    public void ToggleActive() => isActive = !isActive;
 
     public void GameStartup()
     {
@@ -63,8 +61,8 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
             // Toggle Visibility
             if (Raylib.CheckCollisionPointRec(mousePos, visibleIconRect))
             {
-                ToggleVisibility();
                 isVisible = !isVisible;
+                ToggleVisibility();
             }
         }
 
@@ -85,7 +83,7 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
 
         // Centered text
         int textX = (int)Rect.X + 40;
-        int textY = (int)(Rect.Y + (Rect.Height / 2) - 8);
+        int textY = (int)(Rect.Y + Rect.Height / 2 - 8);
         Raylib.DrawText(name, textX, textY, 16, Color.White);
 
         // Draw Gear Icon
@@ -101,6 +99,8 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         if (showMenu)
             DrawMenu();
     }
+
+    public void ToggleActive() => isActive = !isActive;
 
     private void DrawMenu()
     {
@@ -120,18 +120,18 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
     private void RemoveLayer()
     {
         showMenu = false;
-        onClick.Invoke(LayerPanelState.Remove, index, name);
+        onClick.Invoke(LayerPanelState.Remove, index);
     }
 
     private void ClearLayer()
     {
         showMenu = false;
-        onClick.Invoke(LayerPanelState.Clear, index, name);
+        onClick.Invoke(LayerPanelState.Clear, index);
     }
 
     private void ToggleVisibility()
     {
-        onClick.Invoke(LayerPanelState.Visible, index, name);
+        onClick.Invoke(LayerPanelState.Visible, index);
     }
 
     private void RemameLayer(TextInputModalState state, string text)
@@ -141,6 +141,6 @@ public class LayerPanel(Rectangle rectangle, string name, int index, Action<Laye
         if (state is TextInputModalState.Close) return;
 
         name = text;
-        onClick.Invoke(LayerPanelState.Rename, index, name);
+        onClick.Invoke(LayerPanelState.Rename, index);
     }
 }

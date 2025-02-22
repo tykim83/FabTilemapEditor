@@ -3,9 +3,9 @@ using FabTilemapEditor.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor;
+namespace FabTilemapEditor.Tileset;
 
-public class Tileset
+public class Tilesets
 {
     const int PANEL_X = 0;
     const int PANEL_Y = 0;
@@ -59,7 +59,7 @@ public class Tileset
         };
     }
 
-    public void HandleInput()
+    public void Update()
     {
         Vector2 mousePos = Raylib.GetMousePosition();
         if (!Raylib.CheckCollisionPointRec(mousePos, new Rectangle(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT)))
@@ -133,7 +133,7 @@ public class Tileset
 
         // Draw Selected tile
         if (selectedTilePixelPos is not null)
-            Raylib.DrawRectangleLines((int)selectedTilePixelPos.Value.X, (int)(selectedTilePixelPos.Value.Y), Constants.TileSize, Constants.TileSize, Color.Green);
+            Raylib.DrawRectangleLines((int)selectedTilePixelPos.Value.X, (int)selectedTilePixelPos.Value.Y, Constants.TileSize, Constants.TileSize, Color.Green);
 
         Raylib.EndMode2D();
 
