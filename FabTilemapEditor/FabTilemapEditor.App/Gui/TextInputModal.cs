@@ -1,8 +1,8 @@
-﻿using FabTilemapEditor.Shared;
+﻿using FabTilemapEditor.App.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor.Gui;
+namespace FabTilemapEditor.App.Gui;
 
 public class TextInputModal(string inputText, Action<TextInputModalState, string> onConfirm)
 {

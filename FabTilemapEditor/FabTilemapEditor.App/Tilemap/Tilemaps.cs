@@ -1,13 +1,13 @@
-﻿using FabTilemapEditor.Gui;
-using FabTilemapEditor.Layer;
-using FabTilemapEditor.Shared;
-using FabTilemapEditor.Tileset;
+﻿using FabTilemapEditor.App.Gui;
+using FabTilemapEditor.App.Layer;
+using FabTilemapEditor.App.Shared;
+using FabTilemapEditor.App.Tileset;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor.Tilemap;
+namespace FabTilemapEditor.App.Tilemap;
 
-public class Tilemap(Tilesets tilesets, Layers layers)
+public class Tilemaps(Tilesets tilesets, Layers layers)
 {
     private const int PANEL_X = 600;
     private const int PANEL_Y = 0;

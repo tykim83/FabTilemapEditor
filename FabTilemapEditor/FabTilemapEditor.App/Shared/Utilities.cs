@@ -1,7 +1,7 @@
 ﻿using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor.Shared;
+namespace FabTilemapEditor.App.Shared;
 
 public static class Utilities
 {

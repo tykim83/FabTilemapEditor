@@ -1,9 +1,9 @@
-﻿using FabTilemapEditor.Gui;
-using FabTilemapEditor.Shared;
+﻿using FabTilemapEditor.App.Gui;
+using FabTilemapEditor.App.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor.Tileset;
+namespace FabTilemapEditor.App.Tileset;
 
 public class Tilesets
 {

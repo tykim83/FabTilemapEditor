@@ -1,8 +1,8 @@
-﻿using FabTilemapEditor.Shared;
+﻿using FabTilemapEditor.App.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor.Gui;
+namespace FabTilemapEditor.App.Gui;
 
 public class GuiUtilities
 {
@@ -36,7 +36,7 @@ public class GuiUtilities
 
         // Title Text
         var textWidth = Raylib.MeasureText(titleText, 24);
-        var textX = (int)(panelX + (availablePanelWidth / 2) - (textWidth / 2));
+        var textX = panelX + availablePanelWidth / 2 - textWidth / 2;
         var textY = panelY + 15;
         Raylib.DrawText(titleText, textX, textY, 24, Color.White);
 

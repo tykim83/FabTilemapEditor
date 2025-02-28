@@ -1,9 +1,9 @@
-﻿using FabTilemapEditor.Gui;
-using FabTilemapEditor.Shared;
+﻿using FabTilemapEditor.App.Gui;
+using FabTilemapEditor.App.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor.Layer;
+namespace FabTilemapEditor.App.Layer;
 
 public class LayerPanel(Rectangle rectangle, string name, int index, Action<LayerPanelState, int> onClick, Texture2D gearIcon, Texture2D eyeIcon, Texture2D visibleIcon)
 {
