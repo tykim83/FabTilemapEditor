@@ -1,4 +1,4 @@
-﻿namespace FabTilemapEditor.Shared;
+﻿namespace FabTilemapEditor.App.Shared;
 
 public enum LayerPanelState
 {

@@ -1,8 +1,8 @@
-﻿using FabTilemapEditor.Shared;
+﻿using FabTilemapEditor.App.Shared;
 using Raylib_cs;
 using System.Numerics;
 
-namespace FabTilemapEditor.Gui;
+namespace FabTilemapEditor.App.Gui;
 
 public class TextButton(float x, float y, float width, float height, string text, Action onClick, bool isRounded = true)
 {

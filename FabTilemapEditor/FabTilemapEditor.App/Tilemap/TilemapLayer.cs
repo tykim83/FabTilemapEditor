@@ -1,4 +1,4 @@
-﻿namespace FabTilemapEditor.Tilemap;
+﻿namespace FabTilemapEditor.App.Tilemap;
 
 public class TilemapLayer
 {

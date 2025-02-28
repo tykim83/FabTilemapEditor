@@ -1,7 +1,7 @@
-﻿using FabTilemapEditor.Gui;
-using FabTilemapEditor.Shared;
+﻿using FabTilemapEditor.App.Gui;
+using FabTilemapEditor.App.Shared;
 
-namespace FabTilemapEditor.Tilemap;
+namespace FabTilemapEditor.App.Tilemap;
 
 public class TilemapMenu(int x, int y, int tilesWidht, int tilesHeight, Action<TilemapMenuState, int> action)
 {

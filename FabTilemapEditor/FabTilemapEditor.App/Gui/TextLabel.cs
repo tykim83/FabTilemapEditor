@@ -1,7 +1,7 @@
-﻿using FabTilemapEditor.Shared;
+﻿using FabTilemapEditor.App.Shared;
 using Raylib_cs;
 
-namespace FabTilemapEditor.Gui;
+namespace FabTilemapEditor.App.Gui;
 
 public class TextLabel(float x, float y, float width, float height, string text, bool isRounded = true, bool hasBoder = true)
 {
