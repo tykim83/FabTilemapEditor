@@ -32,7 +32,7 @@ public class GuiUtilities
 
         // Complete Shadow
         Raylib.DrawLineEx(new Vector2(panelX + 7, panelY + 46), new Vector2(panelX + 7, panelY + 53), 2, Constants.ShadowColor);
-        Raylib.DrawLineEx(new Vector2(availablePanelWidth + 3, panelY + 46), new Vector2(availablePanelWidth + 3, panelY + 53), 2, Constants.ShadowColor);
+        Raylib.DrawLineEx(new Vector2(availablePanelWidth + panelX - 7, panelY + 46), new Vector2(availablePanelWidth + panelX - 7, panelY + 53), 2, Constants.ShadowColor);
 
         // Title Text
         var textWidth = Raylib.MeasureText(titleText, 24);
