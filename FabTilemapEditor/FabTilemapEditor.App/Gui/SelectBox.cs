@@ -9,6 +9,7 @@ public class SelectBox
     public Rectangle Rect { get; private set; }
     public bool IsOpen { get; private set; }
 
+    private List<Rectangle> optionsRect = [];
     private Rectangle gearIconRect;
     private Texture2D gearIcon;
     private readonly float roundnessValue;
@@ -30,6 +31,11 @@ public class SelectBox
         Raylib.ImageResize(ref image, 28, 28);
         gearIcon = Raylib.LoadTextureFromImage(image);
         Raylib.UnloadImage(image);
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            optionsRect.Add(new Rectangle(x, y + 30 + (i * 40), width + 50, 40));
+        }
     }
 
     public void Update()
@@ -61,5 +67,22 @@ public class SelectBox
 
         // Draw Gear Icon
         Raylib.DrawTexture(gearIcon, (int)gearIconRect.X, (int)gearIconRect.Y, Color.DarkGray);
+
+        // Options
+        if (IsOpen)
+        {
+            for (int i = 0; i < optionsRect.Count; i++)
+            {
+                Rectangle optionRect = optionsRect[i];
+                Raylib.DrawRectangleRec(optionRect, Color.White);
+
+                // Centered text
+                int optionTextX = (int)(optionRect.X + 10);
+                int optionTextY = (int)(optionRect.Y + optionRect.Height / 2 - 8);
+                Raylib.DrawText(options[i], optionTextX, optionTextY, 16, Color.Black);
+            }
+
+            Raylib.DrawRectangleLinesEx(new Rectangle(Rect.X, Rect.Y + 30, Rect.Width + 50, optionsRect.Count * 40), 2, Color.DarkGray);
+        }
     }
 }
