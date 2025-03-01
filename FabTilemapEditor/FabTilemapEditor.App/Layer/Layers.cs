@@ -66,7 +66,7 @@ public class Layers
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
         var height = (int)availableSpace.Height;
-        button = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add Layer", () => AddLayer("New Layer"));
+        button = new TextButton(startingX + 10, startingY + height - 40, 130, 30, "Add Layer", () => AddLayer("New Layer"));
 
         // Load Gear Icons
         Image image = Raylib.LoadImage("Assets/gear_icon.png");

@@ -4,15 +4,34 @@ using System.Numerics;
 
 namespace FabTilemapEditor.App.Gui;
 
-public class TextButton(float x, float y, float width, float height, string text, Action onClick, bool isRounded = true)
+public class TextButton
 {
-    public Rectangle Rect { get; private set; } = new Rectangle(x, y, width, height);
+    public Rectangle Rect { get; private set; }
 
     private bool isHovered;
-    private readonly float roundnessValue = isRounded ? 0.5f : 0;
-
+    private readonly float roundnessValue;
+    private readonly string text;
     private float clickCooldownTimer = 0f;
     private const float CLICK_COOLDOWN = 0.4f;
+
+    private readonly Action? onClick;
+    private readonly Func<Task>? asyncOnClick;
+
+    public TextButton(float x, float y, float width, float height, string text, Action onClick, bool isRounded = true)
+    {
+        this.text = text;
+        this.onClick = onClick;
+        Rect = new Rectangle(x, y, width, height);
+        roundnessValue = isRounded ? 0.5f : 0;
+    }
+
+    public TextButton(float x, float y, float width, float height, string text, Func<Task> onClick, bool isRounded = true)
+    {
+        this.text = text;
+        this.asyncOnClick = onClick;
+        Rect = new Rectangle(x, y, width, height);
+        roundnessValue = isRounded ? 0.5f : 0;
+    }
 
     public void Update()
     {
@@ -24,7 +43,11 @@ public class TextButton(float x, float y, float width, float height, string text
         if (isHovered && Raylib.IsMouseButtonReleased(MouseButton.Left) && clickCooldownTimer >= CLICK_COOLDOWN)
         {
             clickCooldownTimer = 0f;
-            onClick?.Invoke();
+
+            if (onClick is not null)
+                onClick?.Invoke();
+            else
+                asyncOnClick?.Invoke();
         }
     }
 

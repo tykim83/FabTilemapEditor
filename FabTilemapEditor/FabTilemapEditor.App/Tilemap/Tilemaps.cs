@@ -74,7 +74,19 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
                 int tileY = (int)((worldMousePos.Y - startingY) / Constants.TileSize);
 
                 var index = layers.ActiveLayer;
-                tilemapLayers[index].Data[TilemapIndex(tileX, tileY)] = tilesets.SelectedTile.Value;
+                var selectedTilesetName = tilesets.SelectedTileset;
+                var tilemapLayer = tilemapLayers[index];
+
+                if (string.IsNullOrWhiteSpace(tilemapLayer.Tileset))
+                    tilemapLayer.Tileset = selectedTilesetName;
+
+                if (tilemapLayer.Tileset != selectedTilesetName)
+                {
+                    Console.WriteLine($"Layer must use same tileset. Selected: {selectedTilesetName}. Layer: {tilemapLayer.Tileset}");
+                    return;
+                }
+
+                tilemapLayer.Data[TilemapIndex(tileX, tileY)] = tilesets.SelectedTile.Value;
             }
         }
     }
@@ -151,7 +163,7 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
                     int drawX = startingX + tileX * Constants.TileSize;
                     int drawY = startingY + tileY * Constants.TileSize;
 
-                    DrawTile(tileID, drawX, drawY);
+                    DrawTile(tileID, drawX, drawY, layer.Tileset);
                 }
             }
         }
@@ -223,9 +235,10 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
 
     private int TilemapIndex(int x, int y) => y * canvas.TilesWidth + x;
 
-    private void DrawTile(int tileID, int posX, int posY)
+    private void DrawTile(int tileID, int posX, int posY, string layerTileset)
     {
-        int tilesPerRow = tilesets.TilesetTexture.Width / Constants.TileSize;
+        var tileset = tilesets.TilesetTexture[layerTileset];
+        int tilesPerRow = tileset.Width / Constants.TileSize;
 
         int tileX = tileID % tilesPerRow;
         int tileY = tileID / tilesPerRow;
@@ -233,7 +246,7 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
         Rectangle source = new Rectangle(tileX * Constants.TileSize, tileY * Constants.TileSize, Constants.TileSize, Constants.TileSize);
         Rectangle dest = new Rectangle(posX, posY, Constants.TileSize, Constants.TileSize);
 
-        Raylib.DrawTexturePro(tilesets.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
+        Raylib.DrawTexturePro(tileset, source, dest, new Vector2(0, 0), 0.0f, Color.White);
     }
 
     // TilemapMenu Callback Handlers
