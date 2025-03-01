@@ -7,19 +7,16 @@ namespace FabTilemapEditor.App.Tileset;
 
 public class Tilesets(IFileService FileService)
 {
-    const int PANEL_X = 0;
-    const int PANEL_Y = 0;
-    const int PANEL_WIDTH = 600;
-    const int PANEL_HEIGHT = 700;
+    private const int PANEL_X = 0;
+    private const int PANEL_Y = 0;
+    private const int PANEL_WIDTH = 600;
+    private const int PANEL_HEIGHT = 700;
 
-
-
-    private int? selectedTile;
     private Vector2? selectedTilePixelPos;
-
     private Camera2D camera;
-
     private TextButton? addTilesetButton;
+    private SelectBox? selectTilesetBox;
+    private int? selectedTile;
 
     public Dictionary<string, Texture2D> TilesetTexture { get; private set; } = [];
     public string SelectedTileset { get; private set; } = "Tileset_Grass.png";
@@ -35,19 +32,22 @@ public class Tilesets(IFileService FileService)
         var width = (int)availableSpace.Width;
         var height = (int)availableSpace.Height;
 
-        // Init Button 
-        addTilesetButton = new TextButton(startingX + 10, startingY + height - 40, 130, 30, "Add TileSet", AddTileSet);
-        height -= 80;
-
         // Load tileset
         Image image = Raylib.LoadImage("./assets/Tileset_Grass.png");
         TilesetTexture.Add(SelectedTileset, Raylib.LoadTextureFromImage(image));
         Raylib.UnloadImage(image);
 
+        // Init Button 
+        addTilesetButton = new TextButton(startingX + 10, startingY + height - 40, 130, 30, "Add TileSet", AddTileSet);
+        height -= 80;
+
+        // Init SelectBox 
+        selectTilesetBox = new SelectBox(startingX + 10, startingY, width - 20, 30, [.. TilesetTexture.Keys], () => { });
+
+        // Calculate zoom to fit width and height inside panel
         float tilesetWidth = TilesetTexture[SelectedTileset].Width;
         float tilesetHeight = TilesetTexture[SelectedTileset].Height;
 
-        // Calculate zoom to fit width and height inside panel
         float zoomToFitWidth = width / tilesetWidth;
         float zoomToFitHeight = height / tilesetHeight;
         float finalZoom = Math.Min(zoomToFitWidth, zoomToFitHeight);
@@ -111,9 +111,9 @@ public class Tilesets(IFileService FileService)
         var availableSpace = GuiUtilities.RenderSectionUI(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, "Tileset");
 
         var startingX = (int)availableSpace.X;
-        var startingY = (int)availableSpace.Y;
+        var startingY = (int)availableSpace.Y + 40;
         var width = (int)availableSpace.Width;
-        var height = (int)availableSpace.Height - 50;
+        var height = (int)availableSpace.Height - 90;
 
         // Draw Button
         addTilesetButton?.Draw();
@@ -141,6 +141,9 @@ public class Tilesets(IFileService FileService)
         Raylib.EndMode2D();
 
         Raylib.EndScissorMode();
+
+        // Draw SelectBox
+        selectTilesetBox?.Draw();
     }
 
     private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset()
