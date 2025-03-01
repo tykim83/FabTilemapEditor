@@ -44,8 +44,8 @@ public class RaylibApp
         // Draw Tilemap Modal
         _Tilemaps?.InputModal?.Draw();
         if (_Layers is not null)
-            foreach (var modal in _Layers.InputModals)
-                modal.Draw();
+        foreach (var modal in _Layers.InputModals)
+            modal.Draw();
 
         Raylib.EndDrawing();
     }
