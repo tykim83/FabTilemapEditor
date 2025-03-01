@@ -225,7 +225,8 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
 
     private void DrawTile(int tileID, int posX, int posY)
     {
-        int tilesPerRow = tilesets.TilesetTexture.Width / Constants.TileSize;
+        var tileset = tilesets.TilesetTexture[tilesets.SelectedTileset];
+        int tilesPerRow = tileset.Width / Constants.TileSize;
 
         int tileX = tileID % tilesPerRow;
         int tileY = tileID / tilesPerRow;
@@ -233,7 +234,7 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
         Rectangle source = new Rectangle(tileX * Constants.TileSize, tileY * Constants.TileSize, Constants.TileSize, Constants.TileSize);
         Rectangle dest = new Rectangle(posX, posY, Constants.TileSize, Constants.TileSize);
 
-        Raylib.DrawTexturePro(tilesets.TilesetTexture, source, dest, new Vector2(0, 0), 0.0f, Color.White);
+        Raylib.DrawTexturePro(tileset, source, dest, new Vector2(0, 0), 0.0f, Color.White);
     }
 
     // TilemapMenu Callback Handlers

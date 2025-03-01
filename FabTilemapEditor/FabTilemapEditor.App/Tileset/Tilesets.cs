@@ -5,22 +5,25 @@ using System.Numerics;
 
 namespace FabTilemapEditor.App.Tileset;
 
-public class Tilesets
+public class Tilesets(IFileService FileService)
 {
     const int PANEL_X = 0;
     const int PANEL_Y = 0;
     const int PANEL_WIDTH = 600;
     const int PANEL_HEIGHT = 700;
 
-    private Texture2D tilesetTexture;
+
+
     private int? selectedTile;
     private Vector2? selectedTilePixelPos;
+
     private Camera2D camera;
 
     private TextButton? addTilesetButton;
 
+    public Dictionary<string, Texture2D> TilesetTexture { get; private set; } = [];
+    public string SelectedTileset { get; private set; } = "Tileset_Grass.png";
     public int? SelectedTile { get => selectedTile; }
-    public Texture2D TilesetTexture { get => tilesetTexture; }
 
     public void GameStartup()
     {
@@ -33,16 +36,16 @@ public class Tilesets
         var height = (int)availableSpace.Height;
 
         // Init Button 
-        addTilesetButton = new TextButton(startingX + 10, startingY + height - 50, 130, 30, "Add TileSet", AddTileSet);
+        addTilesetButton = new TextButton(startingX + 10, startingY + height - 40, 130, 30, "Add TileSet", AddTileSet);
         height -= 80;
 
         // Load tileset
         Image image = Raylib.LoadImage("./assets/Tileset_Grass.png");
-        tilesetTexture = Raylib.LoadTextureFromImage(image);
+        TilesetTexture.Add(SelectedTileset, Raylib.LoadTextureFromImage(image));
         Raylib.UnloadImage(image);
 
-        float tilesetWidth = tilesetTexture.Width;
-        float tilesetHeight = tilesetTexture.Height;
+        float tilesetWidth = TilesetTexture[SelectedTileset].Width;
+        float tilesetHeight = TilesetTexture[SelectedTileset].Height;
 
         // Calculate zoom to fit width and height inside panel
         float zoomToFitWidth = width / tilesetWidth;
@@ -94,7 +97,7 @@ public class Tilesets
                 var tileX = (int)worldMousePos.X / Constants.TileSize;
                 var tileY = (int)worldMousePos.Y / Constants.TileSize;
 
-                var tilesPerRow = tilesetTexture.Width / Constants.TileSize;
+                var tilesPerRow = TilesetTexture[SelectedTileset].Width / Constants.TileSize;
 
                 selectedTile = tileY * tilesPerRow + tileX;
                 selectedTilePixelPos = new Vector2(tileX * Constants.TileSize, tileY * Constants.TileSize);
@@ -110,7 +113,7 @@ public class Tilesets
         var startingX = (int)availableSpace.X;
         var startingY = (int)availableSpace.Y;
         var width = (int)availableSpace.Width;
-        var height = (int)availableSpace.Height;
+        var height = (int)availableSpace.Height - 50;
 
         // Draw Button
         addTilesetButton?.Draw();
@@ -119,7 +122,7 @@ public class Tilesets
 
         Raylib.BeginMode2D(camera);
 
-        Raylib.DrawTexture(tilesetTexture, 0, 0, Color.White);
+        Raylib.DrawTexture(TilesetTexture[SelectedTileset], 0, 0, Color.White);
 
         // Draw over highlight
         (var isInside, var worldMousePos) = IsMouseInsideTileset();
@@ -145,13 +148,18 @@ public class Tilesets
         var mousePos = Raylib.GetMousePosition();
         var worldMousePos = Raylib.GetScreenToWorld2D(mousePos, camera);
 
-        var isInside = worldMousePos.X >= 0 && worldMousePos.Y >= 0 && worldMousePos.X <= tilesetTexture.Width && worldMousePos.Y <= tilesetTexture.Height;
+        var isInside = worldMousePos.X >= 0 && worldMousePos.Y >= 0 && worldMousePos.X <= TilesetTexture[SelectedTileset].Width && worldMousePos.Y <= TilesetTexture[SelectedTileset].Height;
 
         return (isInside, worldMousePos);
     }
 
-    private void AddTileSet()
+    private async Task AddTileSet()
     {
-        Console.WriteLine("Add Tileset");
+        var filePath = await FileService.PickFileAsync();
+        Image img = Raylib.LoadImage(filePath);
+        SelectedTileset = Path.GetFileName(filePath);
+        Console.WriteLine(SelectedTileset);
+
+        TilesetTexture.Add(SelectedTileset, Raylib.LoadTextureFromImage(img));
     }
 }
