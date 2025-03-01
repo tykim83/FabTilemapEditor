@@ -7,10 +7,10 @@ namespace FabTilemapEditor.App.Gui;
 public class SelectBox
 {
     public Rectangle Rect { get; private set; }
+    public bool IsOpen { get; private set; }
 
     private Rectangle gearIconRect;
     private Texture2D gearIcon;
-    private bool isHovered;
     private readonly float roundnessValue;
     private readonly Action? onClick;
     private readonly List<string> options;
@@ -35,11 +35,13 @@ public class SelectBox
     public void Update()
     {
         Vector2 mousePos = Raylib.GetMousePosition();
-        isHovered = Raylib.CheckCollisionPointRec(mousePos, Rect);
+        var isInside = Raylib.CheckCollisionPointRec(mousePos, Rect);
 
-        if (isHovered && Raylib.IsMouseButtonReleased(MouseButton.Left))
+        if (isInside && Raylib.IsMouseButtonReleased(MouseButton.Left))
         {
-            onClick?.Invoke();
+            IsOpen = !IsOpen;
+            Console.WriteLine($"SelecBox {IsOpen}");
+            // onClick?.Invoke();
         }
     }
 

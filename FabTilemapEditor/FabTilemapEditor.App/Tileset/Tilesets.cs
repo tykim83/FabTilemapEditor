@@ -15,7 +15,7 @@ public class Tilesets(IFileService FileService)
     private Vector2? selectedTilePixelPos;
     private Camera2D camera;
     private TextButton? addTilesetButton;
-    private SelectBox? selectTilesetBox;
+    private SelectBox? selectBox;
     private int? selectedTile;
 
     public Dictionary<string, Texture2D> TilesetTexture { get; private set; } = [];
@@ -42,7 +42,7 @@ public class Tilesets(IFileService FileService)
         height -= 80;
 
         // Init SelectBox 
-        selectTilesetBox = new SelectBox(startingX + 10, startingY, width - 20, 30, [.. TilesetTexture.Keys], () => { });
+        selectBox = new SelectBox(startingX + 10, startingY, width - 20, 30, [.. TilesetTexture.Keys], () => { });
 
         // Calculate zoom to fit width and height inside panel
         float tilesetWidth = TilesetTexture[SelectedTileset].Width;
@@ -73,6 +73,15 @@ public class Tilesets(IFileService FileService)
 
         // Update Button
         addTilesetButton?.Update();
+
+        // Update SelectBox
+        selectBox?.Update();
+        if (selectBox is not null && selectBox.IsOpen)
+        {
+            selectedTile = null;
+            selectedTilePixelPos = null;
+            return;
+        }
 
         // Zoom in/out with mouse wheel
         if (wheel != 0)
@@ -124,26 +133,30 @@ public class Tilesets(IFileService FileService)
 
         Raylib.DrawTexture(TilesetTexture[SelectedTileset], 0, 0, Color.White);
 
-        // Draw over highlight
-        (var isInside, var worldMousePos) = IsMouseInsideTileset();
-        if (isInside)
+        // Draw highlight when selectBox not Active
+        if (selectBox is not null && !selectBox.IsOpen)
         {
-            var tileX = (int)worldMousePos.X / Constants.TileSize;
-            var tileY = (int)worldMousePos.Y / Constants.TileSize;
+            // Draw over highlight
+            (var isInside, var worldMousePos) = IsMouseInsideTileset();
+            if (isInside)
+            {
+                var tileX = (int)worldMousePos.X / Constants.TileSize;
+                var tileY = (int)worldMousePos.Y / Constants.TileSize;
 
-            Raylib.DrawRectangleLines(tileX * Constants.TileSize, tileY * Constants.TileSize, Constants.TileSize, Constants.TileSize, Color.Red);
+                Raylib.DrawRectangleLines(tileX * Constants.TileSize, tileY * Constants.TileSize, Constants.TileSize, Constants.TileSize, Color.Red);
+            }
+
+            // Draw Selected tile
+            if (selectedTilePixelPos is not null)
+                Raylib.DrawRectangleLines((int)selectedTilePixelPos.Value.X, (int)selectedTilePixelPos.Value.Y, Constants.TileSize, Constants.TileSize, Color.Green);
         }
-
-        // Draw Selected tile
-        if (selectedTilePixelPos is not null)
-            Raylib.DrawRectangleLines((int)selectedTilePixelPos.Value.X, (int)selectedTilePixelPos.Value.Y, Constants.TileSize, Constants.TileSize, Color.Green);
 
         Raylib.EndMode2D();
 
         Raylib.EndScissorMode();
 
         // Draw SelectBox
-        selectTilesetBox?.Draw();
+        selectBox?.Draw();
     }
 
     private (bool isInside, Vector2 worldMousePos) IsMouseInsideTileset()
