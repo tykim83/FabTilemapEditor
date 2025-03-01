@@ -74,7 +74,19 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
                 int tileY = (int)((worldMousePos.Y - startingY) / Constants.TileSize);
 
                 var index = layers.ActiveLayer;
-                tilemapLayers[index].Data[TilemapIndex(tileX, tileY)] = tilesets.SelectedTile.Value;
+                var selectedTilesetName = tilesets.SelectedTileset;
+                var tilemapLayer = tilemapLayers[index];
+
+                if (string.IsNullOrWhiteSpace(tilemapLayer.Tileset))
+                    tilemapLayer.Tileset = selectedTilesetName;
+
+                if (tilemapLayer.Tileset != selectedTilesetName)
+                {
+                    Console.WriteLine($"Layer must use same tileset. Selected: {selectedTilesetName}. Layer: {tilemapLayer.Tileset}");
+                    return;
+                }
+
+                tilemapLayer.Data[TilemapIndex(tileX, tileY)] = tilesets.SelectedTile.Value;
             }
         }
     }
@@ -151,7 +163,7 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
                     int drawX = startingX + tileX * Constants.TileSize;
                     int drawY = startingY + tileY * Constants.TileSize;
 
-                    DrawTile(tileID, drawX, drawY);
+                    DrawTile(tileID, drawX, drawY, layer.Tileset);
                 }
             }
         }
@@ -223,9 +235,9 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
 
     private int TilemapIndex(int x, int y) => y * canvas.TilesWidth + x;
 
-    private void DrawTile(int tileID, int posX, int posY)
+    private void DrawTile(int tileID, int posX, int posY, string layerTileset)
     {
-        var tileset = tilesets.TilesetTexture[tilesets.SelectedTileset];
+        var tileset = tilesets.TilesetTexture[layerTileset];
         int tilesPerRow = tileset.Width / Constants.TileSize;
 
         int tileX = tileID % tilesPerRow;

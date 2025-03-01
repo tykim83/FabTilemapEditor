@@ -13,11 +13,11 @@ public class SelectBox
     private Rectangle gearIconRect;
     private Texture2D gearIcon;
     private readonly float roundnessValue;
-    private readonly Action? onClick;
+    private readonly Action<string>? onClick;
     private readonly List<string> options;
-    private readonly int selected;
+    private int selected;
 
-    public SelectBox(float x, float y, float width, float height, List<string> options, Action onClick, bool isRounded = true, int selected = 0)
+    public SelectBox(float x, float y, float width, float height, List<string> options, Action<string> onClick, bool isRounded = true, int selected = 0)
     {
         this.options = options;
         this.selected = selected;
@@ -38,16 +38,38 @@ public class SelectBox
         }
     }
 
+    public void AddtOption(string option)
+    {
+        this.options.Add(option);
+        optionsRect.Add(new Rectangle(Rect.X, Rect.Y + 30 + (optionsRect.Count * 40), Rect.Width + 50, 40));
+        selected = this.options.Count - 1;
+    }
+
     public void Update()
     {
         Vector2 mousePos = Raylib.GetMousePosition();
         var isInside = Raylib.CheckCollisionPointRec(mousePos, Rect);
 
         if (isInside && Raylib.IsMouseButtonReleased(MouseButton.Left))
-        {
             IsOpen = !IsOpen;
-            Console.WriteLine($"SelecBox {IsOpen}");
-            // onClick?.Invoke();
+
+        if (!isInside && IsOpen && Raylib.IsMouseButtonReleased(MouseButton.Left))
+        {
+            for (int i = 0; i < optionsRect.Count; i++)
+            {
+                Rectangle optionRec = optionsRect[i];
+                var isInsideOption = Raylib.CheckCollisionPointRec(mousePos, optionRec);
+
+                if (isInsideOption && Raylib.IsMouseButtonReleased(MouseButton.Left))
+                {
+                    selected = i;
+                    IsOpen = false;
+                    onClick?.Invoke(options[selected]);
+                    return;
+                }
+            }
+
+            IsOpen = false;
         }
     }
 
@@ -74,12 +96,14 @@ public class SelectBox
             for (int i = 0; i < optionsRect.Count; i++)
             {
                 Rectangle optionRect = optionsRect[i];
-                Raylib.DrawRectangleRec(optionRect, Color.White);
+                Color backgroudColor = selected == i ? Constants.TitleBar : Color.White;
+                Raylib.DrawRectangleRec(optionRect, backgroudColor);
 
-                // Centered text
+                // Text
+                Color textColor = selected == i ? Color.White : Color.Black;
                 int optionTextX = (int)(optionRect.X + 10);
                 int optionTextY = (int)(optionRect.Y + optionRect.Height / 2 - 8);
-                Raylib.DrawText(options[i], optionTextX, optionTextY, 16, Color.Black);
+                Raylib.DrawText(options[i], optionTextX, optionTextY, 16, textColor);
             }
 
             Raylib.DrawRectangleLinesEx(new Rectangle(Rect.X, Rect.Y + 30, Rect.Width + 50, optionsRect.Count * 40), 2, Color.DarkGray);

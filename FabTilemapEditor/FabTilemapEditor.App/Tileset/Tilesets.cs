@@ -42,7 +42,7 @@ public class Tilesets(IFileService FileService)
         height -= 80;
 
         // Init SelectBox 
-        selectBox = new SelectBox(startingX + 10, startingY, width - 20, 30, [.. TilesetTexture.Keys], () => { });
+        selectBox = new SelectBox(startingX + 10, startingY, width - 20, 30, [.. TilesetTexture.Keys], UpdateSelectedTileset);
 
         // Calculate zoom to fit width and height inside panel
         float tilesetWidth = TilesetTexture[SelectedTileset].Width;
@@ -177,5 +177,8 @@ public class Tilesets(IFileService FileService)
         Console.WriteLine(SelectedTileset);
 
         TilesetTexture.Add(SelectedTileset, Raylib.LoadTextureFromImage(img));
+        selectBox?.AddtOption(SelectedTileset);
     }
+
+    private void UpdateSelectedTileset(string tilesetName) => SelectedTileset = tilesetName;
 }
