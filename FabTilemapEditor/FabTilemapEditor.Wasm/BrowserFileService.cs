@@ -1,5 +1,4 @@
 ﻿using FabTilemapEditor.App;
-using System;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 
@@ -13,11 +12,9 @@ public partial class BrowserFileService : IFileService
     [JSImport("DownloadFile", "interop.js")]
     public static partial void DownloadFileInterop(string fileName, string dataBase64);
 
-    public Task DownloadFileAsync(string fileName)
+    public Task DownloadFileAsync(string fileName, string dataBase64)
     {
-        byte[] logoBytes = System.IO.File.ReadAllBytes(fileName);
-        string base64Data = Convert.ToBase64String(logoBytes);
-        DownloadFileInterop("raylib_logo.png", base64Data);
+        DownloadFileInterop(fileName, dataBase64);
 
         return Task.CompletedTask;
     }

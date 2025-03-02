@@ -4,6 +4,7 @@ using FabTilemapEditor.App.Shared;
 using FabTilemapEditor.App.Tileset;
 using Raylib_cs;
 using System.Numerics;
+using System.Text;
 using System.Text.Json;
 
 namespace FabTilemapEditor.App.Tilemap;
@@ -312,8 +313,6 @@ public class Tilemaps(Tilesets tilesets, Layers layers, IFileService fileService
             Layers = tilemapLayers
         };
 
-        string tempFilePath = Path.Combine(Path.GetTempPath(), $"tilemap_{Guid.NewGuid()}.json");
-
         var options = new JsonSerializerOptions
         {
             WriteIndented = true
@@ -325,9 +324,12 @@ public class Tilemaps(Tilesets tilesets, Layers layers, IFileService fileService
             options.Converters.Add(converter);
         }
 
-        string jsonData = JsonSerializer.Serialize(tilemapDto, options);
-        await File.WriteAllTextAsync(tempFilePath, jsonData);
+        var myContext = new MyJsonContext(options);
+        string jsonData = JsonSerializer.Serialize(tilemapDto, myContext.TilemapDto);
+        byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonData);
+        string dataBase64 = Convert.ToBase64String(jsonBytes);
 
-        await fileService.DownloadFileAsync(tempFilePath);
+        // Download the JSON file using your JS interop method
+        await fileService.DownloadFileAsync("tilemap.json", dataBase64);
     }
 }

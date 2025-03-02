@@ -33,7 +33,7 @@ export function DownloadFile(fileName, dataBase64) {
     }
     const byteArray = new Uint8Array(byteNumbers);
 
-    const blob = new Blob([byteArray], { type: "image/png" });
+    const blob = new Blob([byteArray], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");

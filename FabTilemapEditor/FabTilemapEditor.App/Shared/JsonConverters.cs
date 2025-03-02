@@ -1,8 +1,14 @@
-﻿using System.Text;
+﻿using FabTilemapEditor.App.Tilemap;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace FabTilemapEditor.App.Shared;
+
+[JsonSerializable(typeof(TilemapDto))]
+public partial class MyJsonContext : JsonSerializerContext
+{
+}
 
 public class TilemapDataConverter(int tilesWidth) : JsonConverter<int[]>
 {

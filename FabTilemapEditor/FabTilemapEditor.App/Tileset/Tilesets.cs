@@ -33,7 +33,7 @@ public class Tilesets(IFileService FileService)
         var height = (int)availableSpace.Height;
 
         // Load tileset
-        Image image = Raylib.LoadImage("./assets/Tileset_Grass.png");
+        Image image = Raylib.LoadImage("./Assets/Tileset_Grass.png");
         TilesetTexture.Add(SelectedTileset, Raylib.LoadTextureFromImage(image));
         Raylib.UnloadImage(image);
 

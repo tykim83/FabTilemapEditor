@@ -69,4 +69,3 @@ public class TextButton
         Raylib.DrawText(text, textX, textY, 16, Color.White);
     }
 }
-
