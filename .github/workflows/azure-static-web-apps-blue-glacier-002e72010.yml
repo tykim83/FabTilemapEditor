@@ -4,37 +4,39 @@ on:
   push:
     branches:
       - main
+      - tykim83-patch-1
 
 jobs:
   build_and_deploy_job:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
-    
+
     steps:
-    
       - uses: actions/checkout@v3
         with:
           submodules: true
           lfs: false
-          
-      # Setup .NET 8
+
+      - name: Install WASM Tools Workload
+        run: dotnet workload restore --project ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
+
+      - name: Install WASM Tools Workload
+        run: dotnet workload install wasm-tools
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
-      # Build your WASM project
       - name: Publish WASM App
-        run: dotnet publish -c Release ./FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
+        run: dotnet publish -c Release ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
 
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_GLACIER_002E72010 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "FabTilemapEditor.Wasm/bin/Release/net8.0/browser-wasm/AppBundle/" # App source code path
-
+          skip_app_build: true
+          app_location: "./FabTilemapEditor/FabTilemapEditor.Wasm/bin/Release/net8.0/browser-wasm/AppBundle/"
