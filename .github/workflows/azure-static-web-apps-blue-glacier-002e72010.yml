@@ -17,8 +17,8 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Install WASM Tools Workload
-        run: dotnet workload restore --project ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
+      # - name: Install WASM Tools Workload
+      #   run: dotnet workload restore --project ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
 
       - name: Install WASM Tools Workload
         run: dotnet workload install wasm-tools
@@ -40,5 +40,5 @@ jobs:
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "FabTilemapEditor.Wasm/bin/Release/net8.0/browser-wasm/AppBundle/" # App source code path
+          app_location: "./FabTilemapEditor/FabTilemapEditor.Wasm/bin/Release/net8.0/browser-wasm/AppBundle/" # App source code path
 
