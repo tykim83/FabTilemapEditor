@@ -17,8 +17,8 @@ jobs:
           submodules: true
           lfs: false
 
-      # - name: Install WASM Tools Workload
-      #   run: dotnet workload restore --project ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
+      - name: Install WASM Tools Workload
+        run: dotnet workload restore --project ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
 
       - name: Install WASM Tools Workload
         run: dotnet workload install wasm-tools
