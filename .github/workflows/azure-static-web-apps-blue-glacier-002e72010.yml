@@ -25,7 +25,7 @@ jobs:
 
       # Build your WASM project
       - name: Publish WASM App
-        run: dotnet publish -c Release --project ./FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
+        run: dotnet publish -c Release ./FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
 
       - name: Build And Deploy
         id: builddeploy
