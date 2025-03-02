@@ -26,4 +26,3 @@ public class TextLabel(float x, float y, float width, float height, string text,
         Raylib.DrawText(text, textX, textY, 16, Color.White);
     }
 }
-

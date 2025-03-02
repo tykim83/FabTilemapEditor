@@ -25,9 +25,9 @@ public class SelectBox
         roundnessValue = isRounded ? 0.5f : 0;
         this.onClick = onClick;
 
-        // Load Gear Icons
+        // Load Icon
         gearIconRect = new Rectangle(Rect.X + Rect.Width - 32, Rect.Y + 2, 28, 28);
-        Image image = Raylib.LoadImage("Assets/gear_icon.png");
+        Image image = Raylib.LoadImage("Assets/arrow-down-icon.png");
         Raylib.ImageResize(ref image, 28, 28);
         gearIcon = Raylib.LoadTextureFromImage(image);
         Raylib.UnloadImage(image);
@@ -87,7 +87,7 @@ public class SelectBox
         int textY = (int)(Rect.Y + Rect.Height / 2 - 8);
         Raylib.DrawText(options[selected], textX, textY, 16, Color.White);
 
-        // Draw Gear Icon
+        // Draw Icon
         Raylib.DrawTexture(gearIcon, (int)gearIconRect.X, (int)gearIconRect.Y, Color.DarkGray);
 
         // Options

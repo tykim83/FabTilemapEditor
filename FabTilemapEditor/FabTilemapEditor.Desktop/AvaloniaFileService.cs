@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using FabTilemapEditor.App;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -37,18 +38,16 @@ public class AvaloniaFileService : IFileService
         return result[0].Path.LocalPath;
     }
 
-    public async Task DownloadFileAsync(string fileName)
+    public async Task DownloadFileAsync(string fileName, string dataBase64)
     {
-        string fileNameOnly = Path.GetFileName(fileName);
-
         var window = new Window { Width = 1, Height = 1, ShowInTaskbar = false, SystemDecorations = SystemDecorations.None, Opacity = 0 };
         window.Show();
 
         var options = new FilePickerSaveOptions
         {
             Title = "Save File",
-            DefaultExtension = ".png",
-            SuggestedFileName = fileNameOnly,
+            DefaultExtension = ".json",
+            SuggestedFileName = fileName,
             FileTypeChoices = new List<FilePickerFileType>
             {
                 {
@@ -64,6 +63,7 @@ public class AvaloniaFileService : IFileService
             return;
 
         string destinationPath = result.Path.LocalPath;
-        File.Copy(fileName, destinationPath, overwrite: true);
+        byte[] dataBytes = Convert.FromBase64String(dataBase64);
+        File.WriteAllBytes(destinationPath, dataBytes);
     }
 }
