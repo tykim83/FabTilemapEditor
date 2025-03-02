@@ -27,7 +27,7 @@ jobs:
         run: ls -la ./FabTilemapEditor/FabTilemapEditor.Wasm
 
       - name: Install WASM Tools Workload
-        run: dotnet workload restore
+        run: dotnet workload restore --project ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
 
       # Setup .NET 8
       - name: Setup .NET
