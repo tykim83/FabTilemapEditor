@@ -17,25 +17,17 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Print Working Directory
-        run: pwd
-
-      - name: List Repository Files
-        run: ls -la ./FabTilemapEditor
-
-      - name: List Files in WASM Project Folder
-        run: ls -la ./FabTilemapEditor/FabTilemapEditor.Wasm
-
       - name: Install WASM Tools Workload
         run: dotnet workload restore --project ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
 
-      # Setup .NET 8
+      - name: Install WASM Tools Workload
+        run: dotnet workload install wasm-tools
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: "8.0.x"
 
-      # Build your WASM project
       - name: Publish WASM App
         run: dotnet publish -c Release ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
 
