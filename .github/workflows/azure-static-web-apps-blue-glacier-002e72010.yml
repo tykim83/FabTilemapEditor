@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - tykim83-patch-1
 
 jobs:
   build_and_deploy_job:
@@ -16,7 +17,17 @@ jobs:
         with:
           submodules: true
           lfs: false
-          
+
+      - name: Print Working Directory
+        run: pwd
+      
+      - name: List Repository Files
+        run: ls -la
+
+      - name: List Files in WASM Project Folder
+        run: ls -la ./FabTilemapEditor.Wasm
+
+                
       # Setup .NET 8
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
