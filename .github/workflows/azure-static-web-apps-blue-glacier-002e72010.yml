@@ -10,9 +10,8 @@ jobs:
   build_and_deploy_job:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
-    
+
     steps:
-    
       - uses: actions/checkout@v3
         with:
           submodules: true
@@ -20,23 +19,22 @@ jobs:
 
       - name: Print Working Directory
         run: pwd
-      
+
       - name: List Repository Files
-        run: ls -la
+        run: ls -la ./FabTilemapEditor
 
       - name: List Files in WASM Project Folder
-        run: ls -la ./FabTilemapEditor.Wasm
+        run: ls -la ./FabTilemapEditor/FabTilemapEditor.Wasm
 
-                
       # Setup .NET 8
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
       # Build your WASM project
       - name: Publish WASM App
-        run: dotnet publish -c Release ./FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
+        run: dotnet publish -c Release ./FabTilemapEditor/FabTilemapEditor.Wasm/FabTilemapEditor.Wasm.csproj
 
       - name: Build And Deploy
         id: builddeploy
