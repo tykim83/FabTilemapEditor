@@ -26,6 +26,9 @@ jobs:
       - name: List Files in WASM Project Folder
         run: ls -la ./FabTilemapEditor/FabTilemapEditor.Wasm
 
+      - name: Install WASM Tools Workload
+        run: dotnet workload restore
+
       # Setup .NET 8
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
