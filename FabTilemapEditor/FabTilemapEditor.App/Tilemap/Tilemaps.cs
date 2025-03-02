@@ -4,10 +4,11 @@ using FabTilemapEditor.App.Shared;
 using FabTilemapEditor.App.Tileset;
 using Raylib_cs;
 using System.Numerics;
+using System.Text.Json;
 
 namespace FabTilemapEditor.App.Tilemap;
 
-public class Tilemaps(Tilesets tilesets, Layers layers)
+public class Tilemaps(Tilesets tilesets, Layers layers, IFileService fileService)
 {
     private const int PANEL_X = 600;
     private const int PANEL_Y = 0;
@@ -41,7 +42,7 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
         var height = (int)availableSpace.Height;
 
         // Init TilemaMenu
-        menu = new TilemapMenu(startingX, startingY, canvas.TilesWidth, canvas.TilesHeight, UpdateTiles);
+        menu = new TilemapMenu(startingX, startingY, width, canvas.TilesWidth, canvas.TilesHeight, UpdateTiles, Export);
         menu.GameStartup();
 
         // Update Camera
@@ -301,5 +302,32 @@ public class Tilemaps(Tilesets tilesets, Layers layers)
         };
         tilemapLayers.Clear();
         tilemapLayers = tempTilemapLayers;
+    }
+
+    private async Task Export()
+    {
+        var tilemapDto = new TilemapDto()
+        {
+            Canvas = canvas,
+            Layers = tilemapLayers
+        };
+
+        string tempFilePath = Path.Combine(Path.GetTempPath(), $"tilemap_{Guid.NewGuid()}.json");
+
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
+        foreach (var layer in tilemapLayers)
+        {
+            var converter = new TilemapDataConverter(canvas.TilesWidth);
+            options.Converters.Add(converter);
+        }
+
+        string jsonData = JsonSerializer.Serialize(tilemapDto, options);
+        await File.WriteAllTextAsync(tempFilePath, jsonData);
+
+        await fileService.DownloadFileAsync(tempFilePath);
     }
 }

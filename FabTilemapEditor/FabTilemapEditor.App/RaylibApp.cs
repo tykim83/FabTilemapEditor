@@ -21,7 +21,7 @@ public class RaylibApp
         Raylib.InitWindow(Constants.ScreenWidth, Constants.ScreenHeight, "Hello World");
         _tilesets = new Tilesets(_fileService);
         _Layers = new Layers();
-        _Tilemaps = new Tilemaps(_tilesets, _Layers);
+        _Tilemaps = new Tilemaps(_tilesets, _Layers, _fileService);
 
         _tilesets.GameStartup();
         _Layers.GameStartup();
@@ -44,8 +44,8 @@ public class RaylibApp
         // Draw Tilemap Modal
         _Tilemaps?.InputModal?.Draw();
         if (_Layers is not null)
-        foreach (var modal in _Layers.InputModals)
-            modal.Draw();
+            foreach (var modal in _Layers.InputModals)
+                modal.Draw();
 
         Raylib.EndDrawing();
     }
